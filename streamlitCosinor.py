@@ -496,7 +496,8 @@ def main():
 
             if st.session_state.analysed:
 
-                results = cosinor_analysis(downsampled, signal)
+                period = 1440/win_size_int[window_size]
+                results = cosinor_analysis(downsampled, signal, period)
 
                 # add the results to the session state
                 st.session_state.results = results
