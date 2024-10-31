@@ -196,7 +196,6 @@ def downsample_bpm_mean(df: pl.DataFrame, window_size: str, signal: str, toleren
 
 def cosinor_analysis(data: pd.DataFrame, signal: str, period: int):
 
-    period = data['x'].max()
 
     if signal == "BpmMean":
         col = "BpmMean"
@@ -209,6 +208,8 @@ def cosinor_analysis(data: pd.DataFrame, signal: str, period: int):
 
     for date in dates:
         data_for_date = data[data['test'] == date]
+
+        # period = data['x'].max()
 
         results[date] = cosinor.fit_me(data_for_date['x'], data_for_date['y'], n_components=1, period=period, plot=False, return_model=True)
 
