@@ -208,10 +208,11 @@ def cosinor_analysis(data: pd.DataFrame, signal: str, period: int):
 
     for date in dates:
         data_for_date = data[data['test'] == date]
+        index_range = np.arange(period)
 
         # period = data['x'].max()
 
-        results[date] = cosinor.fit_me(data_for_date['x'], data_for_date['y'], n_components=1, period=period, plot=False, return_model=True)
+        results[date] = cosinor.fit_me(index_range, data_for_date['y'], n_components=1, period=period, plot=False, return_model=True)
 
     return results
 
