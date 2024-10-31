@@ -286,6 +286,59 @@ def plot_cosinor(data, plot_type, original_data, window_size, date_selected):
     st.plotly_chart(fig)
 
 
+def all_dates_plot(results, original_data, window_size):
+
+    fig = go.Figure()
+
+    for key in results.keys():
+        amplitude = results[key][2]['amplitude']
+        acrophase = results[key][2]['acrophase']
+
+        center_r = [0, amplitude]
+        center_theta = [0, np.rad2deg(acrophase)]
+
+        fig.add_trace(go.Scatterpolar(
+            r=[amplitude],
+            theta=[np.rad2deg(acrophase)],
+            mode='markers',
+            marker=dict(
+                color='red',
+                size=10
+            ),
+            name=key
+        ))
+
+        fig.add_trace(go.Scatterpolar(
+            r=center_r,
+            theta=center_theta,
+            mode='lines',
+            line=dict(
+                color='green',
+                width=2
+            ),
+            name='Radius Line'
+        ))
+
+    hours = ['00:00', '21:00', '18:00', '15:00', '12:00', '09:00', '06:00', '03:00']
+    hours_deg = [0, 45, 90, 135, 180, 225, 270, 315]
+
+    fig.update_layout(
+        title='Cosinor Analysis - All Dates',
+        polar=dict(
+            angularaxis=dict(
+                tickmode='array',
+                tickvals=hours_deg,
+                ticktext=hours,
+                direction='clockwise',
+                rotation=0,
+                thetaunit='degrees'
+            ),
+        )
+    )
+
+    st.plotly_chart(fig)
+
+    
 
 
 def download_results(results, original_data):
@@ -459,6 +512,11 @@ def main():
                     window_size_selected = win_size_int[window_size]
 
                     plot_cosinor(results[selected_date], selected_plot, downsampled, window_size_selected, selected_date)
+
+                show_all_dates = st.checkbox("Show all dates")
+
+                if show_all_dates:
+                    all_dates_plot(results, downsampled, window_size)
 
                 st.write("Cosinor Analysis done")
 
