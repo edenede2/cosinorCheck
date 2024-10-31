@@ -407,7 +407,7 @@ def download_results(results, original_data):
 
     file_name = st.text_input("Enter the file name", "cosinor_results.csv")
 
-    csv = results_df.to_csv(index=False).encode("utf-8")
+    csv = results_df.to_pandas().to_csv(index=False).encode("utf-8")
 
     st.download_button(
         label="Download Results",
