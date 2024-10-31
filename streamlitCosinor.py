@@ -214,78 +214,76 @@ def cosinor_analysis(data: pd.DataFrame, signal: str):
     
 def plot_cosinor(data, plot_type, original_data, window_size, date_selected):
 
-    if plot_type == "Cartesian":
-        fig = go.Figure()
+    fig = go.Figure()
 
-        length = len(original_data['x'])*2
+    length = len(original_data['x'])*2
 
-        x_data = [(x*window_size)/60 for x in original_data['x']]
-        y_data = original_data['y']
+    x_data = [(x*window_size)/60 for x in original_data['x']]
+    y_data = original_data['y']
 
-        x_estimated = [(x*window_size)/60 for x in data[3]][:500]
-        y_estimated = data[4][:500]
+    x_estimated = [(x*window_size)/60 for x in data[3]][:500]
+    y_estimated = data[4][:500]
 
-        st.write(len(x_data), len(y_data), len(x_estimated), len(y_estimated))
+    st.write(len(x_data), len(y_data), len(x_estimated), len(y_estimated))
 
-        fig.add_trace(go.Scatter(x=x_data, y=y_data, mode='markers', name='Original Data'))
-        fig.add_trace(go.Scatter(x=x_estimated, y=y_estimated, mode='lines', name='Estimated Data'))
+    fig.add_trace(go.Scatter(x=x_data, y=y_data, mode='markers', name='Original Data'))
+    fig.add_trace(go.Scatter(x=x_estimated, y=y_estimated, mode='lines', name='Estimated Data'))
 
-        fig.update_layout(title='Cosinor Analysis', xaxis_title='Time [hours]', yaxis_title='Value')
+    fig.update_layout(title='Cosinor Analysis', xaxis_title='Time [hours]', yaxis_title='Value')
 
-        st.plotly_chart(fig)
-
-    elif plot_type == "Polar":
-
-        amplitude = data[2]['amplitude']
-        acrophase = data[2]['acrophase']
-        mesor = data[2]['mesor']
+    st.plotly_chart(fig)
 
 
-        center_r = [0, amplitude]
+    amplitude = data[2]['amplitude']
+    acrophase = data[2]['acrophase']
+    mesor = data[2]['mesor']
 
-        center_theta = [0, np.deg2rad(acrophase)]
 
-        fig = go.Figure()
-        fig.add_trace(go.Scatterpolar(
-            r=[amplitude],
-            theta=[np.rad2deg(acrophase)],
-            mode='markers',
-            marker=dict(
-                color='red',
-                size=10
+    center_r = [0, amplitude]
+
+    center_theta = [0, np.deg2rad(acrophase)]
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatterpolar(
+        r=[amplitude],
+        theta=[np.rad2deg(acrophase)],
+        mode='markers',
+        marker=dict(
+            color='red',
+            size=10
+        ),
+        name='Amplitude and Acrophase'
+    ))
+
+    fig.add_trace(go.Scatterpolar(
+        r=center_r,
+        theta=center_theta,
+        mode='lines',
+        line=dict(
+            color='green',
+            width=2
+        ),
+        name='Radius Line'
+    ))
+
+    hours = ['00:00', '21:00', '18:00', '15:00', '12:00', '09:00', '06:00', '03:00']
+    hours_deg = [0, 45, 90, 135, 180, 225, 270, 315]
+
+    fig.update_layout(
+        title=f'Cosinor Analysis - Date: {date_selected}, Mesor: {mesor}',
+        polar=dict(
+            angularaxis=dict(
+                tickmode='array',
+                tickvals=hours_deg,
+                ticktext=hours,
+                direction='clockwise',
+                rotation=0,
+                thetaunit='degrees'
             ),
-            name='Amplitude and Acrophase'
-        ))
-
-        fig.add_trace(go.Scatterpolar(
-            r=center_r,
-            theta=center_theta,
-            mode='lines',
-            line=dict(
-                color='green',
-                width=2
-            ),
-            name='Radius Line'
-        ))
-
-        hours = ['00:00', '21:00', '18:00', '15:00', '12:00', '09:00', '06:00', '03:00']
-        hours_deg = [0, 45, 90, 135, 180, 225, 270, 315]
-
-        fig.update_layout(
-            title=f'Cosinor Analysis - Date: {date_selected}, Mesor: {mesor}',
-            polar=dict(
-                angularaxis=dict(
-                    tickmode='array',
-                    tickvals=hours_deg,
-                    ticktext=hours,
-                    direction='clockwise',
-                    rotation=0,
-                    thetaunit='degrees'
-                ),
-            )
         )
+    )
 
-        st.plotly_chart(fig)
+    st.plotly_chart(fig)
 
 
 
