@@ -512,12 +512,12 @@ def main():
                     selected_date = st.selectbox("Select the date to plot", results.keys())
 
                     st.session_state.selected_date = selected_date
-                    
+
                     selected_plot = st.selectbox("Select the plot type", ["Cartesian", "Polar"])
 
                     window_size_selected = win_size_int[window_size]
 
-                    plot_cosinor(results[selected_date], selected_plot, downsampled, window_size_selected, selected_date)
+                    plot_cosinor(results[st.session_state.selected_date], selected_plot, downsampled, window_size_selected, selected_date)
 
                 show_all_dates = st.checkbox("Show all dates")
 
