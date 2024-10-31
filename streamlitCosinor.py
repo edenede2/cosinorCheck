@@ -217,7 +217,7 @@ def plot_cosinor(data, plot_type, original_data, window_size, date_selected):
     if plot_type == "Cartesian":
         fig = go.Figure()
 
-        length = len(original_data['x'])/2
+        length = int(len(original_data['x'])/2)
 
         x_data = [(x*window_size)/60 for x in original_data['x']]
         y_data = original_data['y']
