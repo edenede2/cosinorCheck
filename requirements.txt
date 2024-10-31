@@ -1,3 +1,4 @@
 polars
 CosinorPy
 plotly
+seaborn
