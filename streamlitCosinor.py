@@ -100,7 +100,7 @@ def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal
             missing_per_date = pl.col("is_missing").sum().over("date"),
         )
         .with_columns(
-            pl.col('max_consecutive_missing').fill_null(strategy='zero'),
+            pl.col('max_consecutive_missing_signal').fill_null(strategy='zero'),
         )
     )
 
@@ -168,7 +168,7 @@ def downsample_bpm_mean(df: pl.DataFrame, window_size: str, signal: str, toleren
         )
         .filter(
             pl.col("missing_per_date") <= tolerence_minutes,
-            pl.col("max_consecutive_missing") <= tolerence_minutes
+            pl.col("max_consecutive_missing_signal") <= tolerence_minutes
         )
         .with_row_index('index')
         .with_columns(
