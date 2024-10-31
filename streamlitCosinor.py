@@ -191,7 +191,7 @@ def downsample_bpm_mean(df: pl.DataFrame, window_size: str, signal: str, toleren
     return data_for_cosinor
 
 
-def cosinor_analysis(data: pd.DataFrame, signal: str):
+def cosinor_analysis(data: pd.DataFrame, signal: str, period: int):
 
     period = data['x'].max()
 
