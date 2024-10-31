@@ -226,7 +226,7 @@ def plot_cosinor(data, plot_type, original_data, window_size, date_selected):
         y_estimated = data[4][:length]
 
         fig.add_trace(go.Scatter(x=x_data, y=y_data, mode='markers', name='Original Data'))
-        fig.add_trace(go.Scatter(x=x_data, y=y_estimated, mode='lines', name='Estimated Data'))
+        fig.add_trace(go.Scatter(x=x_estimated, y=y_estimated, mode='lines', name='Estimated Data'))
 
         fig.update_layout(title='Cosinor Analysis', xaxis_title='Time [hours]', yaxis_title='Value')
 
