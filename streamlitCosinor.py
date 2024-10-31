@@ -225,6 +225,8 @@ def plot_cosinor(data, plot_type, original_data, window_size, date_selected):
         x_estimated = [(x*window_size)/60 for x in data[3]][:length]
         y_estimated = data[4][:length]
 
+        st.write(len(x_data), len(y_data), len(x_estimated), len(y_estimated))
+
         fig.add_trace(go.Scatter(x=x_data, y=y_data, mode='markers', name='Original Data'))
         fig.add_trace(go.Scatter(x=x_estimated, y=y_estimated, mode='lines', name='Estimated Data'))
 
