@@ -241,7 +241,7 @@ def plot_cosinor(data, plot_type, original_data, window_size, date_selected):
 
     center_r = [0, amplitude]
 
-    center_theta = [0, np.deg2rad(acrophase)]
+    center_theta = [0, np.rad2deg(acrophase)]
 
     fig = go.Figure()
     fig.add_trace(go.Scatterpolar(
