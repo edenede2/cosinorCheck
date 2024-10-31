@@ -25,7 +25,7 @@ def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal
             "is_dst_change",
         ])
         .with_columns(
-            pl.col("DateAndMinute").str.strptime("%Y-%m-%d %H:%M:%S"),
+            pl.col("DateAndMinute").str.strptime(pl.Datetime, "%Y-%m-%d %H:%M:%S"),
         )
     )
 
