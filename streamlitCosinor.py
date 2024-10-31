@@ -383,83 +383,79 @@ def main():
 
             st.divider()
 
-            st.write("Please confirm that the file is valid before proceeding")
 
-            valid = st.button("Confirm")
+            st.write("Data is valid")
 
-            if valid:
-                st.write("Data is valid")
+            st.write("Preprocessing the data")
 
-                st.write("Preprocessing the data")
+            remove_not_in_IL = st.checkbox("Remove date that the subject was'nt in Israel?")
 
-                remove_not_in_IL = st.checkbox("Remove date that the subject was'nt in Israel?")
+            remove_dst_change = st.checkbox("Remove date that the subject was in DST change?")
 
-                remove_dst_change = st.checkbox("Remove date that the subject was in DST change?")
+            signal = st.selectbox("Select the signal to analyze", ["BpmMean", "StepsMean"])
 
-                signal = st.selectbox("Select the signal to analyze", ["BpmMean", "StepsMean"])
+            first_preprocess = first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal)
 
-                first_preprocess = first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal)
+            st.write("Preprocessing done")
 
-                st.write("Preprocessing done")
+            show_preprocess = st.checkbox("Show preprocessed data")
 
-                show_preprocess = st.checkbox("Show preprocessed data")
+            if show_preprocess:
+                st.write(first_preprocess)
 
-                if show_preprocess:
-                    st.write(first_preprocess)
+            st.write("Select the window size for downsampling")
 
-                st.write("Select the window size for downsampling")
+            window_size = st.selectbox("Select the window size", ["1m", "2m", "5m", "10m", "15m", "30m", "1h", "2h"])
 
-                window_size = st.selectbox("Select the window size", ["1m", "2m", "5m", "10m", "15m", "30m", "1h", "2h"])
-
-                win_size_int = {"1m": 1, "2m": 2, "5m": 5, "10m": 10, "15m": 15, "30m": 30, "1h": 60, "2h": 120}
+            win_size_int = {"1m": 1, "2m": 2, "5m": 5, "10m": 10, "15m": 15, "30m": 30, "1h": 60, "2h": 120}
 
 
-                st.write("Select the tolerance for missing data")
+            st.write("Select the tolerance for missing data")
 
-                missing_tolerance = st.slider("Select the tolerance for missing data (percentage)", 0, 100, 10)
+            missing_tolerance = st.slider("Select the tolerance for missing data (percentage)", 0, 100, 10)
 
-                st.write("Downsampling the data")
+            st.write("Downsampling the data")
 
-                downsampled = downsample_bpm_mean(first_preprocess, window_size, signal, missing_tolerance)
+            downsampled = downsample_bpm_mean(first_preprocess, window_size, signal, missing_tolerance)
 
-                st.write("Downsampling done")
+            st.write("Downsampling done")
 
-                show_downsampled = st.checkbox("Show downsampled data")
+            show_downsampled = st.checkbox("Show downsampled data")
 
-                if show_downsampled:
-                    st.write(downsampled)
+            if show_downsampled:
+                st.write(downsampled)
 
 
 
-                st.divider()
+            st.divider()
 
-                st.write("Cosinor Analysis is ready to start")
+            st.write("Cosinor Analysis is ready to start")
 
-                start_analysis = st.button("Start Cosinor Analysis")
+            start_analysis = st.button("Start Cosinor Analysis")
 
-                if start_analysis:
-                    results = cosinor_analysis(downsampled, signal)
+            if start_analysis:
+                results = cosinor_analysis(downsampled, signal)
 
-                    plot = st.checkbox("Show plots")
+                plot = st.checkbox("Show plots")
 
-                    if plot:
-                        selected_date = st.selectbox("Select the date to plot", results.keys())
+                if plot:
+                    selected_date = st.selectbox("Select the date to plot", results.keys())
 
-                        selected_plot = st.selectbox("Select the plot type", ["Cartesian", "Polar"])
+                    selected_plot = st.selectbox("Select the plot type", ["Cartesian", "Polar"])
 
-                        window_size_selected = win_size_int[window_size]
+                    window_size_selected = win_size_int[window_size]
 
-                        plot_cosinor(results[selected_date], selected_plot, downsampled, window_size_selected, selected_date)
+                    plot_cosinor(results[selected_date], selected_plot, downsampled, window_size_selected, selected_date)
 
-                    st.write("Cosinor Analysis done")
+                st.write("Cosinor Analysis done")
 
-                    if results:
-                        st.write("Download the results")
+                if results:
+                    st.write("Download the results")
 
-                        download = st.button("Download Results")
+                    download = st.button("Download Results")
 
-                        if download:
-                            download_results(results, downsampled)
+                    if download:
+                        download_results(results, downsampled)
 
 
 
