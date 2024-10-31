@@ -217,7 +217,7 @@ def plot_cosinor(data, plot_type, original_data, window_size, date_selected):
     if plot_type == "Cartesian":
         fig = go.Figure()
 
-        length = int(len(original_data['x'])/2)
+        length = int(len(original_data['x'])/4)
 
         x_data = [(x*window_size)/60 for x in original_data['x']]
         y_data = original_data['y']
@@ -226,7 +226,7 @@ def plot_cosinor(data, plot_type, original_data, window_size, date_selected):
         y_estimated = data[4][:length]
 
         fig.add_trace(go.Scatter(x=x_data, y=y_data, mode='markers', name='Original Data'))
-        fig.add_trace(go.Scatter(x=x_estimated, y=y_estimated, mode='lines', name='Estimated Data'))
+        fig.add_trace(go.Scatter(x=x_data, y=y_estimated, mode='lines', name='Estimated Data'))
 
         fig.update_layout(title='Cosinor Analysis', xaxis_title='Time [hours]', yaxis_title='Value')
 
