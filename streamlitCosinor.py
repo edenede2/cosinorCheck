@@ -6,6 +6,13 @@ from CosinorPy import file_parser, cosinor, cosinor1
 from datetime import datetime, timedelta, date, time
 import plotly.graph_objects as go
 
+session_state = st.session_state
+
+if 'analysed' not in session_state:
+    session_state.analysed = False
+
+if 'results' not in session_state:
+    session_state.results = None
 
 def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal):
 
@@ -435,6 +442,11 @@ def main():
 
             if start_analysis:
                 results = cosinor_analysis(downsampled, signal)
+
+                # add the results to the session state
+                session_state.results = results
+
+                session_state.analysed = True
 
                 plot = st.checkbox("Show plots")
 
