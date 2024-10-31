@@ -438,9 +438,10 @@ def main():
             st.write("Cosinor Analysis is ready to start")
 
             start_analysis = st.button("Start Cosinor Analysis")
-
             if start_analysis:
                 st.session_state.analysed = True
+
+            if st.session_state.analysed:
 
                 results = cosinor_analysis(downsampled, signal)
 
