@@ -219,6 +219,9 @@ def plot_cosinor(data, plot_type, original_data, window_size, date_selected):
 
     fig = go.Figure()
 
+    data = data[date_selected]
+    original_data = original_data[original_data['test'] == date_selected]
+
     length = len(original_data['x'])*2
 
     x_data = [(x*window_size)/60 for x in original_data['x']]
@@ -517,7 +520,7 @@ def main():
 
                     window_size_selected = win_size_int[window_size]
 
-                    plot_cosinor(results[st.session_state.selected_date], selected_plot, downsampled, window_size_selected, selected_date)
+                    plot_cosinor(results, selected_plot, downsampled, window_size_selected, selected_date)
 
                 show_all_dates = st.checkbox("Show all dates")
 
