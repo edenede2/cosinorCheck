@@ -350,16 +350,16 @@ def quadrant_adjustment(thta, acrphs):
     # Check which quadrant the acrophase falls into
     if 0 <= thta < (np.pi / 2):
         # First quadrant: no correction needed
-        corrected_acrophase = -acrphs
+        corrected_acrophase = np.rad2deg(acrphs)
     elif (np.pi / 2) <= thta < np.pi:
         # Second quadrant: subtract a constant to realign
-        corrected_acrophase = acrphs + np.pi 
+        corrected_acrophase = 180 + np.rad2deg(acrphs)
     elif np.pi <= thta < (3 * np.pi / 2):
         # Third quadrant: make it negative
-        corrected_acrophase = -acrphs - np.pi 
+        corrected_acrophase = 270 + np.rad2deg(acrphs)
     elif (3 * np.pi / 2) <= thta < (2 * np.pi):
         # Fourth quadrant: shift to bring into biological range
-        corrected_acrophase = acrphs - np.pi
+        corrected_acrophase = 360 - np.rad2deg(acrphs)
     else:
         # If outside normal bounds, wrap it
         corrected_acrophase = acrphs % (2 * np.pi)
@@ -399,8 +399,8 @@ def download_results(results, original_data):
             'acrophase (hours)': [float(params['acrophase'] * 24 / (2 * np.pi))],
             'acrophase (degrees)': [float(params['acrophase'] * 180 / np.pi)],
             'corrected_acrophase (rad)': [float(np.rad2deg(params['acrophase']))],
-            'corrected_acrophase (hours)': [float(np.rad2deg(params['acrophase']) * 24 / (360))],
-            'corrected_acrophase (degrees)': [float(np.rad2deg(params['acrophase']))],
+            'corrected_acrophase (hours)': [float((np.rad2deg(-params['acrophase'])/360 )*24)],
+            'corrected_acrophase (degrees)': [float(np.rad2deg(-params['acrophase']))],
             'mesor': [float(params['mesor'])],
             'AIC': [float(model[0].aic)],  # ensure floats
             'BIC': [float(model[0].bic)],
