@@ -387,12 +387,9 @@ def download_results(results, original_data):
         stats = model[1]
         params = model[2]
         original_data1 = original_data[original_data['test'] == key]
-        peak_loc = params['peaks'][0] if len(params['peaks']) > 0 else 1  
-        period_minutes = (peak_loc / params['period']) * 2 * np.pi
         
 
         
-        corrected_acrophase = quadrant_adjustment(period_minutes, params['acrophase'])
 
         cosinor_model_params = {
             'date': [datetime.strptime(key, '%Y-%m-%d')],
@@ -401,9 +398,9 @@ def download_results(results, original_data):
             'acrophase (rad)': [float(params['acrophase'])],
             'acrophase (hours)': [float(params['acrophase'] * 24 / (2 * np.pi))],
             'acrophase (degrees)': [float(params['acrophase'] * 180 / np.pi)],
-            'corrected_acrophase (rad)': [float(corrected_acrophase)],
-            'corrected_acrophase (hours)': [float(np.abs(corrected_acrophase) * 24 / (2 * np.pi))],
-            'corrected_acrophase (degrees)': [float(corrected_acrophase * 180 / np.pi)],
+            'corrected_acrophase (rad)': [float(np.rad2deg(params['acrophase']))],
+            'corrected_acrophase (hours)': [float(np.rad2deg(params['acrophase']) * 24 / (360))],
+            'corrected_acrophase (degrees)': [float(np.rad2deg(params['acrophase']))],
             'mesor': [float(params['mesor'])],
             'AIC': [float(model[0].aic)],  # ensure floats
             'BIC': [float(model[0].bic)],
