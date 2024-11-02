@@ -377,6 +377,9 @@ def download_results(results, original_data):
             'acrophase (rad)': [float(params['acrophase'])],
             'acrophase (hours)': [float(params['acrophase'] * 24 / (2 * np.pi))],
             'acrophase (degrees)': [float(params['acrophase'] * 180 / np.pi)],
+            'corrected_acrophase (rad)': [float(corrected_acrophase)],
+            'corrected_acrophase (hours)': [float(corrected_acrophase * 24 / (2 * np.pi))],
+            'corrected_acrophase (degrees)': [float(corrected_acrophase * 180 / np.pi)],
             'mesor': [float(params['mesor'])],
             'AIC': [float(model[0].aic)],  # ensure floats
             'BIC': [float(model[0].bic)],
