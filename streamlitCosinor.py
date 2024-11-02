@@ -388,7 +388,7 @@ def download_results(results, original_data):
         params = model[2]
         original_data1 = original_data[original_data['test'] == key]
         peak_loc = params['peaks'][0] if len(params['peaks']) > 0 else 1  
-        period_minutes = (peak_loc / params['period']) * 2 * np.pi
+        period_minutes = ((peak_loc / params['period'])*1440) * 2 * np.pi
         
 
         
