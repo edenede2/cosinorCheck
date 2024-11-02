@@ -212,7 +212,7 @@ def cosinor_analysis(data: pd.DataFrame, signal: str, period: int):
 
         # period = data['x'].max()
 
-        results[date] = cosinor.fit_me(index_range, data_for_date['y'], n_components=1, period=period, plot=False, return_model=True)
+        results[date] = cosinor.fit_me(index_range, data_for_date['y'], n_components=1, period=period, plot=False, return_model=True, params_CI=True)
 
     return results
 
@@ -295,16 +295,18 @@ def plot_cosinor(data, plot_type, original_data, window_size, date_selected):
 
 
 def all_dates_plot(results, original_data, window_size):
-
     fig = go.Figure()
 
     for key in results.keys():
+        # Extract parameters
         amplitude = results[key][2]['amplitude']
         acrophase = results[key][2]['acrophase']
+        
+        # Extract confidence intervals
+        ci_amplitude = results[key][2]['CI(amplitude)']
+        ci_acrophase = results[key][2]['CI(acrophase)']
 
-        center_r = [0, amplitude]
-        center_theta = [0, np.rad2deg(acrophase)]
-
+        # Plot the center point
         fig.add_trace(go.Scatterpolar(
             r=[amplitude],
             theta=[np.rad2deg(acrophase)],
@@ -315,6 +317,10 @@ def all_dates_plot(results, original_data, window_size):
             ),
             name=key
         ))
+
+        # Plot the radius line from the center to the point
+        center_r = [0, amplitude]
+        center_theta = [0, np.rad2deg(acrophase)]
 
         fig.add_trace(go.Scatterpolar(
             r=center_r,
@@ -327,11 +333,42 @@ def all_dates_plot(results, original_data, window_size):
             name='Radius Line'
         ))
 
-    hours = ['00:00', '21:00', '18:00', '15:00', '12:00', '09:00', '06:00', '03:00']
+        # Generate confidence ellipse points
+        num_points = 100  # Number of points for smooth ellipse
+        theta_range = np.linspace(0, 2 * np.pi, num_points)
+
+        # Calculate the mean amplitude and acrophase
+        mean_amplitude = (ci_amplitude[0] + ci_amplitude[1]) / 2
+        mean_acrophase = (ci_acrophase[0] + ci_acrophase[1]) / 2
+
+        # Calculate semi-axis lengths based on confidence intervals
+        semi_amplitude = (ci_amplitude[1] - ci_amplitude[0]) / 2
+        semi_acrophase = (ci_acrophase[1] - ci_acrophase[0]) / 2
+
+        # Generate ellipse points in polar coordinates
+        ellipse_r = mean_amplitude + semi_amplitude * np.cos(theta_range)
+        ellipse_theta = mean_acrophase + semi_acrophase * np.sin(theta_range)
+        ellipse_theta_deg = np.rad2deg(ellipse_theta)  # Convert to degrees for plotting
+
+        # Add ellipse trace
+        fig.add_trace(go.Scatterpolar(
+            r=ellipse_r,
+            theta=ellipse_theta_deg,
+            mode='lines',
+            line=dict(
+                color='blue',
+                dash='dash',
+                width=1
+            ),
+            name=f'{key} CI Ellipse'
+        ))
+
+    # Customize angular axis labels
+    hours = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00']
     hours_deg = [0, 45, 90, 135, 180, 225, 270, 315]
 
     fig.update_layout(
-        title='Cosinor Analysis - All Dates',
+        title='Cosinor Analysis - All Dates with Confidence Ellipse',
         polar=dict(
             angularaxis=dict(
                 tickmode='array',
