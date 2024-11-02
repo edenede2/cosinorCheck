@@ -369,13 +369,12 @@ def quadrant_adjustment(thta, acrphs):
 
 def download_results(results, original_data):
     
-    columns = ['date', 'amplitude','period','acrophase (rad)', 'acrophase (hours)',
-                'acrophase (degrees)', 'corrected_acrophase (rad)', 'corrected_acrophase (hours)',
-                'corrected_acrophase (degrees)', 'mesor','AIC', 'BIC','peaks',
-            'heights', 'troughs', 'heights2', 'max_loc', 'period2', 
-            'p-value', 'p_reject', 'SNR', 'RSS', 'resid_SE', 'ME', 
-            'f-pvalue', 't-values const', 't-values x1', 't-values x2', 
-            'R-squared', 'R-squared adjusted', 'SSR', 'minutes_based']
+    columns = ['date', 'amplitude','period','acrophase (rad)', 'corrected_acrophase (rad)',
+                'corrected_acrophase (hours)', 'corrected_acrophase (degrees)',
+                'mesor','AIC', 'BIC','peaks','heights', 'troughs', 'heights2',
+                'max_loc', 'period2', 'p-value', 'p_reject', 'SNR', 'RSS', 
+                'resid_SE', 'ME','f-pvalue', 't-values const', 't-values x1',
+                't-values x2','R-squared', 'R-squared adjusted', 'SSR', 'minutes_based']
 
     # Initialize an empty DataFrame with these columns
     results_df = pl.DataFrame({col: [] for col in columns})
