@@ -353,10 +353,10 @@ def quadrant_adjustment(thta, acrphs):
         corrected_acrophase = np.rad2deg(acrphs)
     elif (np.pi / 2) <= thta < np.pi:
         # Second quadrant: subtract a constant to realign
-        corrected_acrophase = 180 + np.rad2deg(acrphs)
+        corrected_acrophase =  np.rad2deg(acrphs)
     elif np.pi <= thta < (3 * np.pi / 2):
         # Third quadrant: make it negative
-        corrected_acrophase = 270 + np.rad2deg(acrphs)
+        corrected_acrophase = 360 - np.rad2deg(acrphs)
     elif (3 * np.pi / 2) <= thta < (2 * np.pi):
         # Fourth quadrant: shift to bring into biological range
         corrected_acrophase = 360 - np.rad2deg(acrphs)
