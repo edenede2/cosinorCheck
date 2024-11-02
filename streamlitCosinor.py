@@ -394,7 +394,9 @@ def download_results(results, original_data):
         corrected_acrophase = np.deg2rad(corrected_acrophase_deg)
 
         # convert the corrected acrophase degrees to time in format HH:MM
-        corrected_acrophase_time = str(time(int(corrected_acrophase_deg/15), int((corrected_acrophase_deg % 15)*4)))
+        hours = int((corrected_acrophase_deg/360) * 24)
+        minutes = int((corrected_acrophase_deg/360) * 24 * 60) % 60
+        corrected_acrophase_time = f"{hours:02d}:{minutes:02d}"
 
         cosinor_model_params = {
             'date': [datetime.strptime(key, '%Y-%m-%d')],
