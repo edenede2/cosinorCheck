@@ -350,16 +350,16 @@ def quadrant_adjustment(thta, acrphs):
     # Check which quadrant the acrophase falls into
     if 0 <= thta < (np.pi / 2):
         # First quadrant: no correction needed
-        corrected_acrophase = acrphs
+        corrected_acrophase = -acrphs
     elif (np.pi / 2) <= thta < np.pi:
         # Second quadrant: subtract a constant to realign
-        corrected_acrophase = acrphs - (np.pi / 4)
+        corrected_acrophase = acrphs + np.pi 
     elif np.pi <= thta < (3 * np.pi / 2):
         # Third quadrant: make it negative
-        corrected_acrophase = -acrphs + (np.pi / 2)
+        corrected_acrophase = -acrphs - np.pi 
     elif (3 * np.pi / 2) <= thta < (2 * np.pi):
         # Fourth quadrant: shift to bring into biological range
-        corrected_acrophase = acrphs - (3 * np.pi / 2)
+        corrected_acrophase = acrphs - np.pi
     else:
         # If outside normal bounds, wrap it
         corrected_acrophase = acrphs % (2 * np.pi)
@@ -388,7 +388,7 @@ def download_results(results, original_data):
         params = model[2]
         original_data1 = original_data[original_data['test'] == key]
         peak_loc = params['peaks'][0] if len(params['peaks']) > 0 else 1  
-        period_minutes = (((peak_loc / params['period'])*1440)/1440) * 2 * np.pi
+        period_minutes = (peak_loc / params['period']) * 2 * np.pi
         
 
         
