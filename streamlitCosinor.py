@@ -369,7 +369,7 @@ def download_results(results, original_data):
         stats = model[1]
         params = model[2]
         original_data1 = original_data[original_data['test'] == key]
-        peak_loc = params['peaks']
+        peak_loc = params['peaks'] if len(params['peaks']) == 1 else 1
         corrected_acrophase = params['acrophase'] + (2 * np.pi * peak_loc / params['period'])
         cosinor_model_params = {
             'date': [datetime.strptime(key, '%Y-%m-%d')],
