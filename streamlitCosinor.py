@@ -369,8 +369,16 @@ def download_results(results, original_data):
         stats = model[1]
         params = model[2]
         original_data1 = original_data[original_data['test'] == key]
-        peak_loc = params['peaks'] if len(params['peaks']) == 1 else 1
-        corrected_acrophase = params['acrophase'] + (2 * np.pi * peak_loc / params['period'])
+        peak_loc = params['peaks'][0] if len(params['peaks']) > 0 else 1  
+        period_minutes = params['period']
+        if peak_loc < period_minutes / 4:
+            correction_factor = 1
+        elif peak_loc < period_minutes / 2 and peak_loc >= period_minutes / 4:
+            correction_factor = 0
+        else:
+            correction_factor = -1  
+        
+        corrected_acrophase = params['acrophase'] + (correction_factor * (2 * np.pi)) / 3
         cosinor_model_params = {
             'date': [datetime.strptime(key, '%Y-%m-%d')],
             'amplitude': [float(params['amplitude'])],
