@@ -352,7 +352,8 @@ def all_dates_plot(results, original_data, window_size):
 def download_results(results, original_data):
     
     columns = ['date', 'amplitude','period','acrophase (rad)', 'acrophase (hours)',
-                'acrophase (degrees)', 'mesor','AIC', 'BIC','peaks', 
+                'acrophase (degrees)', 'corrected_acrophase (rad)', 'corrected_acrophase (hours)',
+                'corrected_acrophase (degrees)', 'mesor','AIC', 'BIC','peaks',
             'heights', 'troughs', 'heights2', 'max_loc', 'period2', 
             'p-value', 'p_reject', 'SNR', 'RSS', 'resid_SE', 'ME', 
             'f-pvalue', 't-values const', 't-values x1', 't-values x2', 
