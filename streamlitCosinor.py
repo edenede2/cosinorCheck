@@ -388,19 +388,20 @@ def download_results(results, original_data):
         params = model[2]
         original_data1 = original_data[original_data['test'] == key]
         
-
+        peak_indices = params['peaks'] if len(params['peaks']) > 0 else [np.nan]
+        theta = peak_indices[0]/params['period'] * 2 * np.pi
+        corrected_acrophase_deg = quadrant_adjustment(theta, params['acrophase'])
         
+        corrected_acrophase = np.deg2rad(corrected_acrophase_deg)
 
         cosinor_model_params = {
             'date': [datetime.strptime(key, '%Y-%m-%d')],
             'amplitude': [float(params['amplitude'])],
             'period': [float(params['period'])],
             'acrophase (rad)': [float(params['acrophase'])],
-            'acrophase (hours)': [float(params['acrophase'] * 24 / (2 * np.pi))],
-            'acrophase (degrees)': [float(params['acrophase'] * 180 / np.pi)],
-            'corrected_acrophase (rad)': [float(np.rad2deg(params['acrophase']))],
-            'corrected_acrophase (hours)': [float((np.rad2deg(-params['acrophase'])/360 )*24)],
-            'corrected_acrophase (degrees)': [float(np.rad2deg(-params['acrophase']))],
+            'corrected_acrophase (rad)': [float(corrected_acrophase)],
+            'corrected_acrophase (hours)': [float((corrected_acrophase_deg/360)*24)],
+            'corrected_acrophase (degrees)': [float(corrected_acrophase_deg)],
             'mesor': [float(params['mesor'])],
             'AIC': [float(model[0].aic)],  # ensure floats
             'BIC': [float(model[0].bic)],
