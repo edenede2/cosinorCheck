@@ -5,6 +5,7 @@ import polars as pl
 from CosinorPy import file_parser, cosinor, cosinor1
 from datetime import datetime, timedelta, date, time
 import plotly.graph_objects as go
+from scipy.interpolate import CubicSpline, UnivariateSpline
 
 
 if 'analysed' not in st.session_state:
@@ -217,7 +218,7 @@ def cosinor_analysis(data: pd.DataFrame, signal: str, period: int):
     return results
 
     
-def plot_cosinor(data, plot_type, original_data, window_size, date_selected):
+def plot_cosinor(data, original_data, window_size, date_selected):
 
     fig = go.Figure()
 
@@ -494,7 +495,58 @@ def download_results(results, original_data):
 
 
 
+def interpolate_data(data, method):
+    # Assuming 'data' is a Polars DataFrame and we are filling missing values in the 'downsampled' column
+    if method == "sinosuidal":
+        # Interpolate using a simple sinusoidal interpolation method
+        # Here, we assume a regular sampling interval and use a basic cosine or sine-based interpolation
+        x = np.arange(len(data))  # X-axis values (indices)
+        y = data["y"]  # Extract data as numpy array
+        isnan = np.isnan(y)
+        if np.any(isnan):
+            x_valid = x[~isnan]
+            y_valid = y[~isnan]
+            interpolated_values = np.interp(x, x_valid, y_valid)  
+            interpolated_values = np.cos(interpolated_values) 
+            data['y'] = interpolated_values
 
+    elif method == "polynomial":
+        # Polynomial interpolation (using degree 2 as an example)
+        x = np.arange(len(data))
+        y = data["y"]
+        isnan = np.isnan(y)
+        if np.any(isnan):
+            x_valid = x[~isnan]
+            y_valid = y[~isnan]
+            poly_coeff = np.polyfit(x_valid, y_valid, 2)  # Degree 2 polynomial
+            poly_interp = np.polyval(poly_coeff, x)
+            data['y'] = poly_interp
+
+    elif method == "spline-cubic":
+        # Cubic spline interpolation
+        x = np.arange(len(data))
+        y = data["y"]
+        isnan = np.isnan(y)
+        if np.any(isnan):
+            x_valid = x[~isnan]
+            y_valid = y[~isnan]
+            cubic_spline = CubicSpline(x_valid, y_valid)
+            spline_interp = cubic_spline(x)
+            data['y'] = spline_interp
+
+    elif method == "spline-quadratic":
+        # Quadratic spline interpolation (using UnivariateSpline with degree 2)
+        x = np.arange(len(data))
+        y = data["y"]
+        isnan = np.isnan(y)
+        if np.any(isnan):
+            x_valid = x[~isnan]
+            y_valid = y[~isnan]
+            spline_quadratic = UnivariateSpline(x_valid, y_valid, k=2)  # k=2 for quadratic spline
+            spline_interp = spline_quadratic(x)
+            data['y'] = spline_interp
+
+    return data
 
 
 def main():
@@ -559,6 +611,20 @@ def main():
 
             if show_downsampled:
                 st.write(downsampled)
+
+
+            interpolated = st.checkbox("Interpolate the missing data")
+
+            if interpolated:
+                st.write("Select the method for interpolation")
+
+                method = st.selectbox("Select the method for interpolation", ["sinosuidal", "polynomial", "spline-cubic", "spline-quadratic"])
+
+
+
+                st.write("Interpolating the data")
+
+                downsampled = interpolate_data(downsampled, method)
 
 
 
