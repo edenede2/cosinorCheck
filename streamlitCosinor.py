@@ -243,6 +243,7 @@ def plot_cosinor(data, original_data, window_size, date_selected):
 
     x_data = [(x*window_size)/60 for x in original_data['x']]
     y_data = original_data['y']
+    y_data_interpolated = original_data['interpolated_y'] if 'interpolated_y' in original_data.columns else None
 
     x_estimated = [(x*window_size)/60 for x in data[3]][:500]
     y_estimated = data[4][:500]
@@ -251,6 +252,9 @@ def plot_cosinor(data, original_data, window_size, date_selected):
 
     fig.add_trace(go.Scatter(x=x_data, y=y_data, mode='markers', name='Original Data'))
     fig.add_trace(go.Scatter(x=x_estimated, y=y_estimated, mode='lines', name='Estimated Data'))
+    
+    if y_data_interpolated is not None:
+        fig.add_trace(go.Scatter(x=x_data, y=y_data_interpolated, mode='markers', name='Interpolated Data'))
 
     fig.update_layout(title='Cosinor Analysis', xaxis_title='Time [hours]', yaxis_title='Value')
 
