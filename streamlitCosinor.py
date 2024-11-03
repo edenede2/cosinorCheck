@@ -496,55 +496,39 @@ def download_results(results, original_data):
 
 
 def interpolate_data(data, method):
-    # Assuming 'data' is a Polars DataFrame and we are filling missing values in the 'downsampled' column
-    if method == "sinosuidal":
-        # Interpolate using a simple sinusoidal interpolation method
-        # Here, we assume a regular sampling interval and use a basic cosine or sine-based interpolation
-        x = data["x"]  # X-axis values (indices)
-        y = data["y"]  # Extract data as numpy array
-        isnan = np.isnan(y)
-        if np.any(isnan):
-            x_valid = x[~isnan]
-            y_valid = y[~isnan]
+    data = pl.DataFrame(data)
+    y = data["y"].to_numpy()
+    x = np.arange(len(y))  
+    isnan = np.isnan(y)  
+
+    if np.any(isnan):
+        x_valid = x[~isnan]
+        y_valid = y[~isnan]
+
+        if method == "sinosuidal":
             interpolated_values = np.interp(x, x_valid, y_valid)  
-            interpolated_values = np.cos(interpolated_values) 
-            data['y'] = interpolated_values
+            interpolated_values[~isnan] = y[~isnan] 
+            interpolated_values[isnan] = np.cos(interpolated_values[isnan])  
 
-    elif method == "polynomial":
-        # Polynomial interpolation (using degree 2 as an example)
-        x = data["x"]
-        y = data["y"]
-        isnan = np.isnan(y)
-        if np.any(isnan):
-            x_valid = x[~isnan]
-            y_valid = y[~isnan]
-            poly_coeff = np.polyfit(x_valid, y_valid, 2)  # Degree 2 polynomial
+        elif method == "polynomial":
+            poly_coeff = np.polyfit(x_valid, y_valid, 2) 
             poly_interp = np.polyval(poly_coeff, x)
-            data['y'] = poly_interp
+            interpolated_values = y.copy()  
+            interpolated_values[isnan] = poly_interp[isnan]
 
-    elif method == "spline-cubic":
-        # Cubic spline interpolation
-        x = data["x"]
-        y = data["y"]
-        isnan = np.isnan(y)
-        if np.any(isnan):
-            x_valid = x[~isnan]
-            y_valid = y[~isnan]
+        elif method == "spline-cubic":
             cubic_spline = CubicSpline(x_valid, y_valid)
             spline_interp = cubic_spline(x)
-            data['y'] = spline_interp
+            interpolated_values = y.copy()
+            interpolated_values[isnan] = spline_interp[isnan]
 
-    elif method == "spline-quadratic":
-        # Quadratic spline interpolation (using UnivariateSpline with degree 2)
-        x = data["x"]
-        y = data["y"]
-        isnan = np.isnan(y)
-        if np.any(isnan):
-            x_valid = x[~isnan]
-            y_valid = y[~isnan]
-            spline_quadratic = UnivariateSpline(x_valid, y_valid, k=2)  # k=2 for quadratic spline
+        elif method == "spline-quadratic":
+            spline_quadratic = UnivariateSpline(x_valid, y_valid, k=2)  
             spline_interp = spline_quadratic(x)
-            data['y'] = spline_interp
+            interpolated_values = y.copy()  
+            interpolated_values[isnan] = spline_interp[isnan]  
+
+        data = data.with_columns(y=pl.Series(interpolated_values)).to_pandas()
 
     return data
 
