@@ -216,15 +216,19 @@ def cosinor_analysis(data: pd.DataFrame, signal: str, period: int):
 
         data_for_date = pl.DataFrame(data_for_date)
 
-        data_for_date = (
-            data_for_date
-            .with_columns(
-                y=pl.when(pl.col('y').is_null())
-                    .then(pl.col('interpolated_y'))
-                    .otherwise(pl.col('y'))
+
+        if 'interpolated_y' in data_for_date.columns:
+            data_for_date = (
+                data_for_date
+                .with_columns(
+                    y=pl.when(pl.col('y').is_null())
+                        .then(pl.col('interpolated_y'))
+                        .otherwise(pl.col('y'))
+                )
+                .to_pandas()
             )
-            .to_pandas()
-        )
+        else:
+            data_for_date = data_for_date.to_pandas()
 
 
 
