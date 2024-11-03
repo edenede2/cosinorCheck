@@ -6,6 +6,7 @@ from CosinorPy import file_parser, cosinor, cosinor1
 from datetime import datetime, timedelta, date, time
 import plotly.graph_objects as go
 from scipy.interpolate import CubicSpline, UnivariateSpline
+from scipy.optimize import curve_fit
 
 
 if 'analysed' not in st.session_state:
@@ -514,6 +515,9 @@ def download_results(results, original_data):
     )
 
 
+def sinusoidal_model(x, amplitude, frequency, phase, offset):
+    return amplitude * np.sin(frequency * x + phase) + offset
+
 
 def interpolate_data(data, method):
     data = pl.DataFrame(data)
@@ -529,6 +533,20 @@ def interpolate_data(data, method):
             interpolated_values = np.interp(x, x_valid, y_valid)  
             interpolated_values[~isnan] = y[~isnan] 
             interpolated_values[isnan] = [(x+1)*np.median(y_valid) for x in np.cos(interpolated_values[isnan])]
+
+        elif method == "sinosuidal (curve-fit)":
+            # Initial guess for the parameters: amplitude, frequency, phase, and offset
+            initial_guess = [np.std(y_valid), 2 * np.pi / len(y_valid), 0, np.mean(y_valid)]
+
+            # Fit the model to the known (non-missing) data points
+            try:
+                params, _ = curve_fit(sinusoidal_model, x_valid, y_valid, p0=initial_guess)
+                interpolated_values = y.copy()  # Start with original data
+                interpolated_values[isnan] = sinusoidal_model(x[isnan], *params)  # Apply fitted model to missing
+            except RuntimeError:
+                print("Curve fitting did not converge; consider refining the initial guess.")
+                interpolated_values = y  # Fallback to the original data if fitting fails
+
 
         elif method == "polynomial":
             poly_coeff = np.polyfit(x_valid, y_valid, 2) 
@@ -622,7 +640,7 @@ def main():
             if interpolated:
                 st.write("Select the method for interpolation")
 
-                method = st.selectbox("Select the method for interpolation", ["sinosuidal", "polynomial", "spline-cubic", "spline-quadratic"])
+                method = st.selectbox("Select the method for interpolation", ["sinosuidal", "sinosuidal (curve-fit)" "polynomial", "spline-cubic", "spline-quadratic"])
 
 
 
