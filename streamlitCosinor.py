@@ -213,6 +213,20 @@ def cosinor_analysis(data: pd.DataFrame, signal: str, period: int):
 
         # period = data['x'].max()
 
+        data_for_date = pl.DataFrame(data_for_date)
+
+        data_for_date = (
+            data_for_date
+            .with_columns(
+                y=pl.when(pl.col('y').is_null())
+                    .then(pl.col('interpolated_y'))
+                    .otherwise(pl.col('y'))
+            )
+            .to_pandas()
+        )
+
+
+
         results[date] = cosinor.fit_me(index_range, data_for_date['y'], n_components=1, period=period, plot=False, return_model=True, params_CI=True)
 
     return results
