@@ -250,11 +250,13 @@ def plot_cosinor(data, original_data, window_size, date_selected):
 
     st.write(len(x_data), len(y_data), len(x_estimated), len(y_estimated))
 
+    if y_data_interpolated is not None:
+        fig.add_trace(go.Scatter(x=x_data, y=y_data_interpolated, mode='markers', name='Interpolated Data'))
+        
     fig.add_trace(go.Scatter(x=x_data, y=y_data, mode='markers', name='Original Data'))
     fig.add_trace(go.Scatter(x=x_estimated, y=y_estimated, mode='lines', name='Estimated Data'))
     
-    if y_data_interpolated is not None:
-        fig.add_trace(go.Scatter(x=x_data, y=y_data_interpolated, mode='markers', name='Interpolated Data'))
+
 
     fig.update_layout(title='Cosinor Analysis', xaxis_title='Time [hours]', yaxis_title='Value')
 
