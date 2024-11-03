@@ -252,7 +252,7 @@ def plot_cosinor(data, original_data, window_size, date_selected):
 
     if y_data_interpolated is not None:
         fig.add_trace(go.Scatter(x=x_data, y=y_data_interpolated, mode='markers', name='Interpolated Data'))
-        
+
     fig.add_trace(go.Scatter(x=x_data, y=y_data, mode='markers', name='Original Data'))
     fig.add_trace(go.Scatter(x=x_estimated, y=y_estimated, mode='lines', name='Estimated Data'))
     
@@ -528,7 +528,7 @@ def interpolate_data(data, method):
         if method == "sinosuidal":
             interpolated_values = np.interp(x, x_valid, y_valid)  
             interpolated_values[~isnan] = y[~isnan] 
-            interpolated_values[isnan] = np.cos(interpolated_values[isnan])  
+            interpolated_values[isnan] = [(x+1)*np.median(y_valid) for x in np.cos(interpolated_values[isnan])]
 
         elif method == "polynomial":
             poly_coeff = np.polyfit(x_valid, y_valid, 2) 
