@@ -500,7 +500,7 @@ def interpolate_data(data, method):
     if method == "sinosuidal":
         # Interpolate using a simple sinusoidal interpolation method
         # Here, we assume a regular sampling interval and use a basic cosine or sine-based interpolation
-        x = np.arange(len(data))  # X-axis values (indices)
+        x = data["x"]  # X-axis values (indices)
         y = data["y"]  # Extract data as numpy array
         isnan = np.isnan(y)
         if np.any(isnan):
@@ -512,7 +512,7 @@ def interpolate_data(data, method):
 
     elif method == "polynomial":
         # Polynomial interpolation (using degree 2 as an example)
-        x = np.arange(len(data))
+        x = data["x"]
         y = data["y"]
         isnan = np.isnan(y)
         if np.any(isnan):
@@ -524,7 +524,7 @@ def interpolate_data(data, method):
 
     elif method == "spline-cubic":
         # Cubic spline interpolation
-        x = np.arange(len(data))
+        x = data["x"]
         y = data["y"]
         isnan = np.isnan(y)
         if np.any(isnan):
@@ -536,7 +536,7 @@ def interpolate_data(data, method):
 
     elif method == "spline-quadratic":
         # Quadratic spline interpolation (using UnivariateSpline with degree 2)
-        x = np.arange(len(data))
+        x = data["x"]
         y = data["y"]
         isnan = np.isnan(y)
         if np.any(isnan):
