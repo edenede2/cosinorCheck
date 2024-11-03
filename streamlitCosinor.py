@@ -528,7 +528,7 @@ def interpolate_data(data, method):
             interpolated_values = y.copy()  
             interpolated_values[isnan] = spline_interp[isnan]  
 
-        data = data.with_columns(y=pl.Series(interpolated_values)).to_pandas()
+        data = data.with_columns(interpolated_y=pl.Series(interpolated_values)).to_pandas()
 
     return data
 
