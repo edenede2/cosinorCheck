@@ -640,7 +640,7 @@ def main():
             if interpolated:
                 st.write("Select the method for interpolation")
 
-                method = st.selectbox("Select the method for interpolation", ["sinosuidal", "sinosuidal (curve-fit)" "polynomial", "spline-cubic", "spline-quadratic"])
+                method = st.selectbox("Select the method for interpolation", ["sinosuidal", "sinosuidal (curve-fit)", "polynomial", "spline-cubic", "spline-quadratic"])
 
 
 
