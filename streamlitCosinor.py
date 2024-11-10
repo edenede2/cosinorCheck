@@ -216,6 +216,7 @@ def cosinor_analysis(data: pd.DataFrame, signal: str, period: int):
 
         data_for_date = pl.DataFrame(data_for_date)
 
+        data_for_date = data_for_date.drop_nulls()
 
         if 'interpolated_y' in data_for_date.columns:
             data_for_date = (
