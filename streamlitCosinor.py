@@ -455,12 +455,28 @@ def download_results(results, original_data):
         theta = peak_indices[0]/params['period'] * 2 * np.pi
         corrected_acrophase_deg = quadrant_adjustment(theta, params['acrophase'])
         
+
+        
+
+
+
         corrected_acrophase = np.deg2rad(corrected_acrophase_deg)
+
+        trough_indices = params['troughs'][0] if len(params['troughs']) > 0 else [np.nan]
+        trough_loc = trough_indices/params['period'] * 24
+
+        trough_hours = int(trough_loc)
+        trough_minutes = int((trough_loc - trough_hours) * 60)
+
+        trough_time = f"{trough_hours:02d}:{trough_minutes:02d}"
+
 
         # convert the corrected acrophase degrees to time in format HH:MM
         hours = int((corrected_acrophase_deg/360) * 24)
         minutes = int((corrected_acrophase_deg/360) * 24 * 60) % 60
         corrected_acrophase_time = f"{hours:02d}:{minutes:02d}"
+
+
 
         cosinor_model_params = {
             'date': [datetime.strptime(key, '%Y-%m-%d')],
@@ -476,6 +492,7 @@ def download_results(results, original_data):
             'peaks': [str(params['peaks'])],  # Convert list to string
             'heights': [str(params['heights'])],  # Convert list to string
             'troughs': [str(params['troughs'])],
+            'trough_time': [str(trough_time)],
             'heights2': [str(params['heights2'])],
             'max_loc': [float(params['max_loc'])],
             'period2': [float(params['period2'])],
