@@ -435,8 +435,8 @@ def download_results(results, original_data):
     
     columns = ['date', 'amplitude','period','acrophase (rad)', 'corrected_acrophase (rad)',
                 'corrected_acrophase (hours)', 'corrected_acrophase (degrees)',
-                'mesor','AIC', 'BIC','peaks','heights', 'troughs', 'heights2',
-                'max_loc', 'period2', 'p-value', 'p_reject', 'SNR', 'RSS', 
+                'mesor','AIC', 'BIC','peaks','heights', 'troughs', 'trough_time', 
+                'heights2','max_loc', 'period2', 'p-value', 'p_reject', 'SNR', 'RSS', 
                 'resid_SE', 'ME','f-pvalue', 't-values const', 't-values x1',
                 't-values x2','R-squared', 'R-squared adjusted', 'SSR', 'minutes_based']
 
@@ -456,7 +456,7 @@ def download_results(results, original_data):
         corrected_acrophase_deg = quadrant_adjustment(theta, params['acrophase'])
         
 
-        
+
 
 
 
