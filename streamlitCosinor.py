@@ -233,7 +233,7 @@ def cosinor_analysis(data: pd.DataFrame, signal: str, period: int):
 
 
 
-        results[date] = cosinor.fit_me(index_range, data_for_date['y'], n_components=1, period=period, plot=False, return_model=True, params_CI=True)
+        results[date] = cosinor.fit_me(data_for_date['x'], data_for_date['y'], n_components=1, period=period, plot=False, return_model=True, params_CI=True)
 
     return results
 
