@@ -525,7 +525,7 @@ def download_results(results, original_data):
 
     st.write("Download the results")
 
-    file_name = st.text_input("Enter the file name", "cosinor_results.csv")
+    file_name = st.text_input("Enter the file name", placeholder="cosinor_results.csv")
 
     csv = results_df.to_pandas().to_csv(index=False).encode("utf-8")
 
