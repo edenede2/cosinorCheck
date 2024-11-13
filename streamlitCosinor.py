@@ -599,7 +599,7 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
         # Generate ellipse points in polar coordinates
         ellipse_r = mean_amplitude + semi_amplitude * np.cos(theta_range)
         ellipse_theta = mean_acrophase + semi_acrophase * np.sin(theta_range)
-        ellipse_theta_deg = ellipse_theta# Convert to degrees for plotting
+        ellipse_theta_deg = np.rad2deg(ellipse_theta)# Convert to degrees for plotting
 
         
 
