@@ -449,7 +449,7 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
 
     st.write(f"abs acrophase: {acrophase}")
 
-    center_theta = [0, acrophase]
+    center_theta = [0, acrophase)]
 
     fig = go.Figure()
     fig.add_trace(go.Scatterpolar(
@@ -539,8 +539,6 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
             half_day = False
         # Extract parameters
         amplitude = results[key][2]['amplitude']
-        theta = results[key][2]['peaks'][0]/results[key][2]['period'] * 2 * np.pi
-        corrected_acrophase = quadrant_adjustment(theta, results[key][2]['acrophase'])
         if half_day:
             acrophase = results[key][2]['acrophase']
             acrophase = np.abs(acrophase) + np.pi
