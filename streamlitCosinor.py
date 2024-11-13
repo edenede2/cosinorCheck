@@ -434,7 +434,7 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
 
     # if half_day:
     #     acrophase = acrophase - np.pi
-    # corrected_acrophase = quadrant_adjustment(theta, data[2]['acrophase'])
+    acrophase = quadrant_adjustment(theta, data[2]['acrophase'])
 
     amplitude = data[2]['amplitude']
     # if half_day:
