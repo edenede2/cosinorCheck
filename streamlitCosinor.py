@@ -550,14 +550,16 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
         
         # Extract confidence intervals
         ci_amplitude = results[key][2]['CI(amplitude)']
+        ci_acrophase = results[key][2]['CI(acrophase)']
 
         for i in range(2):
-            ci_amplitude[i] = quadrant_adjustment(theta, ci_amplitude[i])
-            
+            ci_acrophase[i] = quadrant_adjustment(theta, ci_acrophase[i])
+
+
         # Plot the center point
         fig.add_trace(go.Scatterpolar(
             r=[amplitude],
-            theta=[np.rad2deg(acrophase)],
+            theta=[acrophase],
             mode='markers',
             marker=dict(
                 color='red',
@@ -568,7 +570,7 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
 
         # Plot the radius line from the center to the point
         center_r = [0, amplitude]
-        center_theta = [0, np.rad2deg(acrophase)]
+        center_theta = [0,acrophase]
 
         fig.add_trace(go.Scatterpolar(
             r=center_r,
