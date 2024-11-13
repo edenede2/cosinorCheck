@@ -393,6 +393,11 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
     data = data[date_selected]
     original_data = original_data[original_data['test'] == date_selected]
 
+    if "12:00:00" in date_selected:
+        half_day = True
+    else:
+        half_day = False
+
     length = len(original_data['x'])*2
 
     x_data = [(x*window_size)/60 for x in original_data['x']]
@@ -403,6 +408,10 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
     y_estimated = data[4][:500]
 
     st.write(len(x_data), len(y_data), len(x_estimated), len(y_estimated))
+
+    if half_day:
+        x_data = [x + 12 for x in x_data if x < 12 else x - 12]
+        x_estimated = [x + 12 for x in x_estimated if x < 12 else x - 12]
 
     if y_data_interpolated is not None:
         fig.add_trace(go.Scatter(x=x_data, y=y_data_interpolated, mode='markers', name='Interpolated Data'))
@@ -419,6 +428,8 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
 
     amplitude = data[2]['amplitude']
     acrophase = data[2]['acrophase']
+    if half_day:
+        acrophase = acrophase + np.pi
     mesor = data[2]['mesor']
 
 
