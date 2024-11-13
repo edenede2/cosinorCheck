@@ -824,10 +824,13 @@ def main():
 
             select_period_size = st.selectbox("Select the period size (hours)", ["24", "48", "72", "96", "120", "144", "168"])
 
+            select_period_size = int(select_period_size)
+
             st.write("Select the shift size for each period")
 
             select_shift_size = st.selectbox("Select the shift size (hours)", ["48","24", "12"])
 
+            select_shift_size = int(select_shift_size)
 
             st.write("Select the window size for downsampling")
 
