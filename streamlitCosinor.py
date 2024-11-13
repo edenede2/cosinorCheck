@@ -92,7 +92,11 @@ def downsample_bpm_mean(df: pl.DataFrame, window_size: str, signal: str) -> pd.D
         pl.col("downsampled")
     ])
 
+
     downsampled_df = downsampled.to_pandas()
+
+    downsampled_df = downsampled_df.rename(columns={"downsampled": "y"})
+    
     return downsampled_df
 
 def cosinor_analysis(data: pd.DataFrame, signal: str, period: int):
