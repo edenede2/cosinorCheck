@@ -383,7 +383,7 @@ def cosinor_analysis(data: list, signal: str, period: int):
     # return results
 
     
-def plot_cosinor(data, original_data, window_size, date_selected, period):
+def plot_cosinor(data, original_data, window_size, date_selected, period, select_period_size):
 
     fig = go.Figure()
 
@@ -449,7 +449,7 @@ def plot_cosinor(data, original_data, window_size, date_selected, period):
         name='Radius Line'
     ))
 
-    hours, hours_deg = generate_polarticks(period)
+    hours, hours_deg = generate_polarticks(period, select_period_size)
 
     # hours = ['00:00', '21:00', '18:00', '15:00', '12:00', '09:00', '06:00', '03:00']
     # hours_deg = [0, 45, 90, 135, 180, 225, 270, 315]
@@ -473,28 +473,37 @@ def plot_cosinor(data, original_data, window_size, date_selected, period):
     st.plotly_chart(fig)
 
 
-def generate_polarticks(period):
+def generate_polarticks(period, select_period_size):
     total_hours = period
 
     num_ticks = 12
 
-    tick_interval = total_hours / num_ticks
+    tick_interval = select_period_size / num_ticks
 
     hours = []
     hours_deg = []
 
-    for i in range(num_ticks +1):
-        hour = i * tick_interval
-        deg = (i * 360) / num_ticks
-        hour_int = int(hour % 24)
-        day = int(hour // 24) + 1
-        label = f"Day {day} - {hour_int:02d}:00"
-        hours.append(label)
-        hours_deg.append(deg)
+    if select_period_size == 24:
+        for i in range(num_ticks + 1):
+            hour = i * tick_interval
+            deg = (i * 360) / num_ticks
+            hour_int = int(hour % 24)
+            label = f"{hour_int:02d}:00"
+            hours.append(label)
+            hours_deg.append(deg)
+    else:
+        for i in range(num_ticks +1):
+            hour = i * tick_interval
+            deg = (i * 360) / num_ticks
+            hour_int = int(hour % 24)
+            day = int(hour // 24) + 1
+            label = f"Day {day} - {hour_int:02d}:00"
+            hours.append(label)
+            hours_deg.append(deg)
 
     return hours, hours_deg
 
-def all_dates_plot(results, original_data, window_size, period):
+def all_dates_plot(results, original_data, window_size, period, select_period_size):
     fig = go.Figure()
 
     for key in results.keys():
@@ -565,7 +574,7 @@ def all_dates_plot(results, original_data, window_size, period):
         ))
 
     # period_hours = 24
-    hours, hours_deg = generate_polarticks(period)
+    hours, hours_deg = generate_polarticks(period, select_period_size)
 
     # # Customize angular axis labels
     # hours = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00']
@@ -883,51 +892,7 @@ def main():
 
                 st.session_state.results = results
 
-            #     plot = st.checkbox("Show plots")
-
-            # st.write("Downsampling the data")
-
-            # downsampled = downsample_bpm_mean(first_preprocess, window_size, signal, missing_tolerance)
-
-            # st.write("Downsampling done")
-
-            # show_downsampled = st.checkbox("Show downsampled data")
-
-            # if show_downsampled:
-            #     st.write(downsampled)
-
-
-            # interpolated = st.checkbox("Interpolate the missing data")
-
-            # if interpolated:
-            #     st.write("Select the method for interpolation")
-
-            #     method = st.selectbox("Select the method for interpolation", ["sinosuidal", "sinosuidal (curve-fit)", "polynomial", "spline-cubic", "spline-quadratic"])
-
-
-
-            #     st.write("Interpolating the data")
-
-            #     downsampled = interpolate_data(downsampled, method)
-
-
-
-            # st.divider()
-
-            # st.write("Cosinor Analysis is ready to start")
-
-            # start_analysis = st.button("Start Cosinor Analysis")
-            # if start_analysis:
-            #     st.session_state.analysed = True
-
-            # if st.session_state.analysed:
-
-            #     period = 1440/win_size_int[window_size]
-            #     results = cosinor_analysis(downsampled, signal, period)
-
-            #     # add the results to the session state
-            #     st.session_state.results = results
-
+          
 
             if st.session_state.analysed:
                 plot = st.checkbox("Show plots")
@@ -941,7 +906,7 @@ def main():
                     window_size_selected = win_size_int[window_size]
                     period = select_period_size * 60 / win_size_int[window_size]
                     st.write(f"Period: {period}")
-                    plot_cosinor(st.session_state.results, st.session_state.preprocessed, window_size_selected, selected_date, period)
+                    plot_cosinor(st.session_state.results, st.session_state.preprocessed, window_size_selected, selected_date, period, select_period_size)
 
                 show_all_dates = st.checkbox("Show all dates")
 
@@ -958,7 +923,7 @@ def main():
 
                     if download:
                         period = select_period_size * 60 / win_size_int[window_size]
-                        download_results(st.session_state.results, st.session_state.preprocessed, window_size_selected, period)
+                        download_results(st.session_state.results, st.session_state.preprocessed, window_size_selected, period, select_period_size)
 
 
 
