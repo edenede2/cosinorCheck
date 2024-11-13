@@ -449,7 +449,7 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
 
     st.write(f"abs acrophase: {acrophase}")
 
-    center_theta = [0, acrophase)]
+    center_theta = [0, acrophase]
 
     fig = go.Figure()
     fig.add_trace(go.Scatterpolar(
