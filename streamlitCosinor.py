@@ -719,7 +719,7 @@ def download_results(results, original_data, window_size, period, select_period_
 
 
         cosinor_model_params = {
-            'date': [datetime.strptime(key, '%Y-%m-%d')],
+            'date': [key],
             'amplitude': [float(params['amplitude'])],
             'period': [float(params['period'])],
             'acrophase (rad)': [float(params['acrophase'])],
