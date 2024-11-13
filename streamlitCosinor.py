@@ -587,7 +587,7 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
         num_points = 100  # Number of points for smooth ellipse
         theta_range = np.linspace(0, 2 * np.pi, num_points)
 
-        print(ci_amplitude, ci_acrophase)
+        st.write(ci_amplitude, ci_acrophase)
         # Calculate the mean amplitude and acrophase
         mean_amplitude = (ci_amplitude[0] + ci_amplitude[1]) / 2
         mean_acrophase = (np.deg2rad(ci_acrophase[0]) + np.deg2rad(ci_acrophase[1])) / 2
