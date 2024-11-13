@@ -938,12 +938,14 @@ def main():
 
 
                     window_size_selected = win_size_int[window_size]
+                    period = select_period_size * 60 / win_size_int[window_size]
 
                     plot_cosinor(st.session_state.results, st.session_state.preprocessed, window_size_selected, selected_date, period)
 
                 show_all_dates = st.checkbox("Show all dates")
 
                 if show_all_dates:
+                    period = select_period_size * 60 / win_size_int[window_size]
                     all_dates_plot(st.session_state.results, st.session_state.preprocessed, window_size_selected, period)
 
                 st.write("Cosinor Analysis done")
@@ -954,6 +956,7 @@ def main():
                     download = st.button("Download Results")
 
                     if download:
+                        period = select_period_size * 60 / win_size_int[window_size]
                         download_results(st.session_state.results, st.session_state.preprocessed, window_size_selected, period)
 
 
