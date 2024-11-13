@@ -435,12 +435,16 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
         acrophase = np.abs(acrophase) + np.pi
     else:
         acrophase = data[2]['acrophase']
+        if acrophase < 0:
+            acrophase = 2 * np.pi + acrophase
+        else:
+            acrophase = acrophase
     mesor = data[2]['mesor']
 
 
     center_r = [0, amplitude]
 
-    st.write(acrophase)
+    st.write(f"abs acrophase: {np.abs(acrophase)}")
 
     center_theta = [0, np.rad2deg(acrophase)]
 
