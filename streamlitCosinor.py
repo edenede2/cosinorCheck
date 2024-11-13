@@ -430,7 +430,7 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
 
     theta = data[2]['peaks'][0]/data[2]['period'] * 2 * np.pi
     # acrophase = quadrant_adjustment(theta, data[2]['acrophase'])
-    acrophase = data[2]['acrophase']
+    acrophase = np.rad2deg(data[2]['acrophase'])
 
     if half_day:
         acrophase = acrophase - np.pi
