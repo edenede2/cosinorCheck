@@ -18,6 +18,11 @@ if 'results' not in st.session_state:
 if 'selected_window_label' not in st.session_state:
     st.session_state.selected_window_label = None
 
+if 'downsampled_data' not in st.session_state:
+    st.session_state.downsampled_data = None
+
+    
+
 def generate_fixed_windows(start_datetime, end_datetime, window_size_hours, window_shift_hours):
     """
     Generate time windows starting every window_shift_hours, with specified window sizes.
