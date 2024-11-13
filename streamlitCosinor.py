@@ -387,7 +387,7 @@ def plot_cosinor(data, original_data, window_size, date_selected, period):
 
     fig = go.Figure()
 
-    data = pl.concat(data, how='vertical_relaxed').to_pandas()
+    original_data = pl.concat(original_data, how='vertical_relaxed').to_pandas()
 
     data = data[date_selected]
     original_data = original_data[original_data['test'] == date_selected]
