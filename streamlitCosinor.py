@@ -552,12 +552,13 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
         # Extract confidence intervals
         ci_amplitude = results[key][2]['CI(amplitude)']
         ci_acrophase = results[key][2]['CI(acrophase)']
+        ci_acrophase = [np.rad2deg(x) for x in ci_acrophase]
 
         # for i in range(len(ci_acrophase)):
         #     ci_acrophase[i] = quadrant_adjustment(theta, np.deg2rad(ci_acrophase[i]))
         
         if half_day:
-            ci_acrophase = [x - 180 for x in ci_acrophase]
+            ci_acrophase = [np.rad2deg(x) - 180 for x in ci_acrophase]
 
         # st.write(f"CI Amplitude: {ci_amplitude}")
         st.write(f"CI Acrophase: {ci_acrophase}")
