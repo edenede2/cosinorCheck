@@ -940,7 +940,7 @@ def main():
 
                     window_size_selected = win_size_int[window_size]
                     period = select_period_size * 60 / win_size_int[window_size]
-
+                    st.write(f"Period: {period}")
                     plot_cosinor(st.session_state.results, st.session_state.preprocessed, window_size_selected, selected_date, period)
 
                 show_all_dates = st.checkbox("Show all dates")
