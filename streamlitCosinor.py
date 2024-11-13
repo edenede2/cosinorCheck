@@ -545,8 +545,10 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
         theta = results[key][2]['peaks'][0]/results[key][2]['period'] * 2 * np.pi
         if half_day:
             corrected_acrophase = quadrant_adjustment(theta, acrophase)
+            acrophase = np.abs(acrophase) + np.pi
         else:
             corrected_acrophase = acrophase    
+            acrophase = corrected_acrophase
         
         # Extract confidence intervals
         ci_amplitude = results[key][2]['CI(amplitude)']
