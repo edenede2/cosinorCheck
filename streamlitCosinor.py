@@ -543,7 +543,7 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
         acrophase = results[key][2]['acrophase']
 
         theta = results[key][2]['peaks'][0]/results[key][2]['period'] * 2 * np.pi
-        corrected_acrophase = quadrant_adjustment(theta, acrophase)
+        acrophase = quadrant_adjustment(theta, acrophase, radian=True)
 
         if half_day:
             acrophase = acrophase - np.pi
@@ -647,20 +647,32 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
 
     st.plotly_chart(fig)
 
-def quadrant_adjustment(thta, acrphs):
+def quadrant_adjustment(thta, acrphs, radian=True):
     # Check which quadrant the acrophase falls into
     if 0 <= thta < (np.pi / 2):
-        # First quadrant: no correction needed
-        corrected_acrophase = np.rad2deg(acrphs)
+        if radian:
+            corrected_acrophase = acrphs
+        else:
+            # First quadrant: no correction needed
+            corrected_acrophase = np.rad2deg(acrphs)
     elif (np.pi / 2) <= thta < np.pi:
         # Second quadrant: subtract a constant to realign
-        corrected_acrophase =  np.rad2deg(acrphs)
+        if radian:
+            corrected_acrophase = acrphs 
+        else:
+            corrected_acrophase =  np.rad2deg(acrphs)
     elif np.pi <= thta < (3 * np.pi / 2):
         # Third quadrant: make it negative
-        corrected_acrophase = 360 - np.rad2deg(acrphs)
+        if radian:
+            corrected_acrophase = 2 * np.pi - acrphs
+        else:
+            corrected_acrophase = 360 - np.rad2deg(acrphs)
     elif (3 * np.pi / 2) <= thta < (2 * np.pi):
-        # Fourth quadrant: shift to bring into biological range
-        corrected_acrophase = 360 - np.rad2deg(acrphs)
+        if radian:
+            corrected_acrophase = 2 * np.pi - acrphs
+        else:
+            # Fourth quadrant: shift to bring into biological range
+            corrected_acrophase = 360 - np.rad2deg(acrphs)
     else:
         # If outside normal bounds, wrap it
         corrected_acrophase = acrphs % (2 * np.pi)
