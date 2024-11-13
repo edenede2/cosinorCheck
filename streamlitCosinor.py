@@ -440,6 +440,8 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
 
     center_r = [0, amplitude]
 
+    st.write(acrophase)
+
     center_theta = [0, np.rad2deg(acrophase)]
 
     fig = go.Figure()
