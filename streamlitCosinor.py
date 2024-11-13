@@ -539,22 +539,21 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
             half_day = False
         # Extract parameters
         amplitude = results[key][2]['amplitude']
-        if half_day:
-            acrophase = results[key][2]['acrophase']
-            acrophase = np.abs(acrophase) + np.pi
-        else:
-            acrophase = results[key][2]['acrophase']
+        theta = results[key][2]['peaks'][0]/results[key][2]['period'] * 2 * np.pi
+        corrected_acrophase = quadrant_adjustment(theta, results[key][2]['acrophase'])
+        acrophase = corrected_acrophase
+        # if half_day:
+        #     acrophase = results[key][2]['acrophase']
+        #     acrophase = np.abs(acrophase) + np.pi
+        # else:
+        #     acrophase = results[key][2]['acrophase']
         
         # Extract confidence intervals
         ci_amplitude = results[key][2]['CI(amplitude)']
 
-        if half_day:
-            ci_acrophase = results[key][2]['CI(acrophase)']
-            for i in range(len(ci_acrophase)):
-                ci_acrophase[i] = np.abs(ci_acrophase[i]) + np.pi
-        else:
-            ci_acrophase = results[key][2]['CI(acrophase)']
-
+        for i in range(2):
+            ci_amplitude[i] = quadrant_adjustment(theta, ci_amplitude[i])
+            
         # Plot the center point
         fig.add_trace(go.Scatterpolar(
             r=[amplitude],
