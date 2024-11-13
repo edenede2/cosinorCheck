@@ -429,7 +429,7 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
     st.plotly_chart(fig)
 
     theta = data[2]['peaks'][0]/data[2]['period'] * 2 * np.pi
-    acrophase = quadrant_adjustment(theta, data[2]['acrophase'])
+    acrophase = quadrant_adjustment(theta, data[2]['acrophase'], radian=False)
     # corrected_acrophase = quadrant_adjustment(theta, data[2]['acrophase'])
 
     amplitude = data[2]['amplitude']
