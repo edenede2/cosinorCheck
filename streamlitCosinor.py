@@ -653,7 +653,7 @@ def quadrant_adjustment(thta, acrphs):
     return corrected_acrophase
 
 
-def download_results(results, original_data, window_size, period):
+def download_results(results, original_data, window_size, period, select_period_size):
 
     original_data = pl.concat(original_data, how='vertical_relaxed').to_pandas()
     
