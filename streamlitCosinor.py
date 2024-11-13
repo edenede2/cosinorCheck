@@ -430,9 +430,11 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
 
 
     amplitude = data[2]['amplitude']
-    acrophase = data[2]['acrophase']
     if half_day:
+        acrophase = data[2]['acrophase']
         acrophase = acrophase + np.pi
+    else:
+        acrophase = data[2]['acrophase']
     mesor = data[2]['mesor']
 
 
