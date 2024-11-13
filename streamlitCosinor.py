@@ -848,6 +848,8 @@ def main():
 
                 interpolation_method = st.selectbox("Select the method for interpolation", ["sinosuidal", "sinosuidal (curve-fit)", "polynomial", "spline-cubic", "spline-quadratic"])
 
+            else:
+                interpolation_method = None
             
 
             if st.button("Preprocess the data"):
