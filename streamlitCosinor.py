@@ -454,7 +454,7 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
     fig = go.Figure()
     fig.add_trace(go.Scatterpolar(
         r=[amplitude],
-        theta=[np.rad2deg(acrophase)],
+        theta=[acrophase],
         mode='markers',
         marker=dict(
             color='red',
