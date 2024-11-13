@@ -14,28 +14,30 @@ if 'analysed' not in st.session_state:
 if 'results' not in st.session_state:
     st.session_state.results = None
 
-if 'selected_window_id' not in st.session_state:
-    st.session_state.selected_window_id = None
+if 'selected_window_label' not in st.session_state:
+    st.session_state.selected_window_label = None
 
-def generate_time_windows(start_datetime, end_datetime, window_size_hours, window_shift_hours):
+def generate_fixed_windows(start_datetime, end_datetime, window_size_hours, start_hour):
+    """
+    Generate time windows starting at fixed times (e.g., 00:00 or 12:00)
+    with specified window sizes.
+    """
     windows = []
-    current_start = start_datetime
+    current_start = datetime.combine(start_datetime.date(), time(start_hour))
+    if current_start < start_datetime:
+        current_start += timedelta(days=1)
+    delta_window = timedelta(hours=window_size_hours)
     window_id = 0
 
-    delta_window = timedelta(hours=window_size_hours)
-    delta_shift = timedelta(hours=window_shift_hours)
-
     while current_start <= end_datetime:
-        current_end = current_start + delta_window
+        current_end = current_start + delta_window - timedelta(seconds=1)  # include up to end time
         label = f"{current_start.strftime('%Y-%m-%d %H:%M:%S')} to {current_end.strftime('%Y-%m-%d %H:%M:%S')}"
         windows.append({'window_id': window_id, 'start': current_start, 'end': current_end, 'label': label})
-        current_start += delta_shift
+        current_start += timedelta(hours=24)  # Move to the next day
         window_id += 1
-
     return windows
 
 def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal):
-
     if signal == "BpmMean":
         col = "BpmMean"
     elif signal == "StepsMean":
@@ -62,8 +64,7 @@ def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal
 
     return df
 
-def downsample_bpm_mean(df: pl.DataFrame, window_size: str, signal: str, tolerence: int, window_id: int) -> pd.DataFrame:
-
+def downsample_bpm_mean(df: pl.DataFrame, window_size: str, signal: str) -> pd.DataFrame:
     if signal == "BpmMean":
         col = "BpmMean"
     elif signal == "StepsMean":
@@ -71,61 +72,37 @@ def downsample_bpm_mean(df: pl.DataFrame, window_size: str, signal: str, toleren
 
     grouped = df.group_by_dynamic(
         "DateAndMinute",
-        every=window_size,      
+        every=window_size,
         period=window_size,
-        closed='left',           
-        label='left'             
+        closed='left',
+        label='left'
     ).agg([
-        pl.col(col).count().alias("count_non_missing"),      
-        pl.col(col).is_null().sum().alias("count_missing"), 
-        pl.col(col).mean().alias("mean"),                
+        pl.col(col).count().alias("count_non_missing"),
+        pl.col(col).is_null().sum().alias("count_missing"),
+        pl.col(col).mean().alias("mean"),
     ])
-    
+
     downsampled = grouped.with_columns(
         pl.when(pl.col("count_missing") > pl.col("count_non_missing"))
-          .then(None)                         
-          .otherwise(pl.col("mean"))          
-          .alias("downsampled")          
+          .then(None)
+          .otherwise(pl.col("mean"))
+          .alias("downsampled")
     ).select([
-        pl.col("DateAndMinute"),                   
-        pl.col("downsampled")               
-    ]).with_row_count('Index')
+        pl.col("DateAndMinute"),
+        pl.col("downsampled")
+    ])
 
-    tolerence_minutes = (df.shape[0]) * tolerence / 100
-
-    data_for_cosinor = (
-        downsampled
-        .filter(
-            pl.col("downsampled").is_not_null()
-        )
-        .with_row_count('index')
-        .select(
-            x=pl.col('index'),
-            y=pl.col('downsampled'),
-            test=pl.lit(window_id).cast(pl.String())
-        )
-        .to_pandas()
-    )
-
-    return data_for_cosinor
+    downsampled_df = downsampled.to_pandas()
+    return downsampled_df
 
 def cosinor_analysis(data: pd.DataFrame, signal: str, period: int):
-
-    if signal == "BpmMean":
-        col = "BpmMean"
-    elif signal == "StepsMean":
-        col = "StepsInMinute"
-
     dates = data['test'].unique()
-
     results = {}
 
     for date in dates:
         data_for_date = data[data['test'] == date]
-        index_range = np.arange(period)
 
         data_for_date = pl.DataFrame(data_for_date)
-
         data_for_date = data_for_date.drop_nulls()
 
         if 'interpolated_y' in data_for_date.columns:
@@ -141,7 +118,15 @@ def cosinor_analysis(data: pd.DataFrame, signal: str, period: int):
         else:
             data_for_date = data_for_date.to_pandas()
 
-        results[date] = cosinor.fit_me(data_for_date['x'], data_for_date['y'], n_components=1, period=period, plot=False, return_model=True, params_CI=True)
+        results[date] = cosinor.fit_me(
+            data_for_date['x'],
+            data_for_date['y'],
+            n_components=1,
+            period=period,
+            plot=False,
+            return_model=True,
+            params_CI=True
+        )
 
     return results
 
@@ -164,36 +149,16 @@ def generate_polar_ticks(analysis_window_size_hours):
 
     return hours, hours_deg
 
-def plot_cosinor(results, downsampled_data, window_size, window_id, analysis_window_size):
-
-    # Get the result for the selected window
-    data = results[window_id]
-    # Safely get original data
-    original_data_list = []
-    for df in downsampled_data:
-        if not df.empty and 'test' in df.columns:
-            if df['test'].iloc[0] == str(window_id):
-                original_data_list.append(df)
-    if not original_data_list:
-        st.error(f"No data found for window ID {window_id}")
-        return
-    original_data = pd.concat(original_data_list)
-
-    # Get the first (and only) date in data
-    date_selected = str(window_id)
-
-    data = data[date_selected]
-
-    length = len(original_data['x'])*2
+def plot_cosinor(results, original_data, window_size, window_label, analysis_window_size):
+    data = results[window_label]
+    original_data = original_data[original_data['test'] == window_label]
 
     x_data = [(x * window_size) / 60 for x in original_data['x']]
     y_data = original_data['y']
     y_data_interpolated = original_data['interpolated_y'] if 'interpolated_y' in original_data.columns else None
 
-    x_estimated = [(x * window_size) / 60 for x in data[3]][:500]
-    y_estimated = data[4][:500]
-
-    st.write(len(x_data), len(y_data), len(x_estimated), len(y_estimated))
+    x_estimated = [(x * window_size) / 60 for x in data[3]]
+    y_estimated = data[4]
 
     fig = go.Figure()
 
@@ -240,7 +205,7 @@ def plot_cosinor(results, downsampled_data, window_size, window_id, analysis_win
     hours, hours_deg = generate_polar_ticks(analysis_window_size)
 
     fig.update_layout(
-        title=f'Cosinor Analysis - Window ID: {window_id}, Mesor: {mesor}',
+        title=f'Cosinor Analysis - Window: {window_label}, Mesor: {mesor}',
         polar=dict(
             angularaxis=dict(
                 tickmode='array',
@@ -255,15 +220,203 @@ def plot_cosinor(results, downsampled_data, window_size, window_id, analysis_win
 
     st.plotly_chart(fig)
 
-# The rest of your code remains mostly unchanged
-# Ensure to store 'results' and 'downsampled_data' in 'st.session_state' after analysis
+def all_dates_plot(results, original_data, window_size, analysis_window_size):
+    fig = go.Figure()
+
+    for key in results.keys():
+        data = results[key]
+        amplitude = data[2]['amplitude']
+        acrophase = data[2]['acrophase']
+
+        fig.add_trace(go.Scatterpolar(
+            r=[amplitude],
+            theta=[np.rad2deg(acrophase)],
+            mode='markers',
+            marker=dict(
+                size=10
+            ),
+            name=key
+        ))
+
+    hours, hours_deg = generate_polar_ticks(analysis_window_size)
+
+    fig.update_layout(
+        title='Cosinor Analysis - All Windows',
+        polar=dict(
+            angularaxis=dict(
+                tickmode='array',
+                tickvals=hours_deg,
+                ticktext=hours,
+                direction='clockwise',
+                rotation=0,
+                thetaunit='degrees'
+            ),
+        )
+    )
+
+    st.plotly_chart(fig)
+
+def quadrant_adjustment(thta, acrphs):
+    if 0 <= thta < (np.pi / 2):
+        corrected_acrophase = np.rad2deg(acrphs)
+    elif (np.pi / 2) <= thta < np.pi:
+        corrected_acrophase = np.rad2deg(acrphs)
+    elif np.pi <= thta < (3 * np.pi / 2):
+        corrected_acrophase = 360 - np.rad2deg(acrphs)
+    elif (3 * np.pi / 2) <= thta < (2 * np.pi):
+        corrected_acrophase = 360 - np.rad2deg(acrphs)
+    else:
+        corrected_acrophase = acrphs % (2 * np.pi)
+    return corrected_acrophase
+
+def download_results(results, original_data):
+    columns = ['window_label', 'amplitude','period','acrophase (rad)', 'corrected_acrophase (rad)',
+                'corrected_acrophase (hours)', 'corrected_acrophase (degrees)',
+                'mesor','AIC', 'BIC','peaks','heights', 'troughs', 'trough_time',
+                'heights2','max_loc', 'period2', 'p-value', 'p_reject', 'SNR', 'RSS',
+                'resid_SE', 'ME','f-pvalue', 't-values const', 't-values x1',
+                't-values x2','R-squared', 'R-squared adjusted', 'SSR', 'minutes_based']
+
+    results_df = pl.DataFrame({col: [] for col in columns})
+
+    for key in results.keys():
+        model = results[key]
+        cosinor_model = model[0]
+        stats = model[1]
+        params = model[2]
+        original_data1 = original_data[original_data['test'] == key]
+
+        peak_indices = params['peaks'] if len(params['peaks']) > 0 else [np.nan]
+        theta = peak_indices[0]/params['period'] * 2 * np.pi
+        corrected_acrophase_deg = quadrant_adjustment(theta, params['acrophase'])
+
+        corrected_acrophase = np.deg2rad(corrected_acrophase_deg)
+
+        trough_indices = params['troughs'][0] if len(params['troughs']) > 0 else [np.nan]
+        trough_loc = trough_indices/params['period'] * 24
+
+        trough_hours = int(trough_loc)
+        trough_minutes = int((trough_loc - trough_hours) * 60)
+
+        trough_time = f"{trough_hours:02d}:{trough_minutes:02d}"
+
+        total_hours = (corrected_acrophase_deg/360) * params['period'] * (1/60)
+        hours = int(total_hours)
+        minutes = int((total_hours - hours) * 60)
+        corrected_acrophase_time = f"{hours:02d}:{minutes:02d}"
+
+        cosinor_model_params = {
+            'window_label': [key],
+            'amplitude': [float(params['amplitude'])],
+            'period': [float(params['period'])],
+            'acrophase (rad)': [float(params['acrophase'])],
+            'corrected_acrophase (rad)': [float(corrected_acrophase)],
+            'corrected_acrophase (hours)': [corrected_acrophase_time],
+            'corrected_acrophase (degrees)': [float(corrected_acrophase_deg)],
+            'mesor': [float(params['mesor'])],
+            'AIC': [float(cosinor_model.aic)],
+            'BIC': [float(cosinor_model.bic)],
+            'peaks': [str(params['peaks'])],
+            'heights': [str(params['heights'])],
+            'troughs': [str(params['troughs'])],
+            'trough_time': [str(trough_time)],
+            'heights2': [str(params['heights2'])],
+            'max_loc': [float(params['max_loc'])],
+            'period2': [float(params['period2'])],
+            'p-value': [float(stats['p'])],
+            'p_reject': [bool(stats['p_reject'])],
+            'SNR': [float(stats['SNR'])],
+            'RSS': [float(stats['RSS'])],
+            'resid_SE': [float(stats['resid_SE'])],
+            'ME': [float(stats['ME'])],
+            'f-pvalue': [float(cosinor_model.f_pvalue)],
+            't-values const': [float(cosinor_model.tvalues[0])],
+            't-values x1': [float(cosinor_model.tvalues[1])],
+            't-values x2': [float(cosinor_model.tvalues[2])],
+            'R-squared': [float(cosinor_model.rsquared)],
+            'R-squared adjusted': [float(cosinor_model.rsquared_adj)],
+            'SSR': [float(cosinor_model.ssr)],
+            'minutes_based': [int(original_data1['y'].notna().sum())]
+        }
+        df = pl.DataFrame(cosinor_model_params, strict=False)
+        results_df = pl.concat([results_df, df], how='vertical_relaxed')
+
+    st.write("Download the results")
+
+    show_results = st.checkbox("Show Results")
+
+    if show_results:
+        st.write(results_df.to_pandas())
+
+    st.write("Download the results")
+
+    file_name = st.text_input("Enter the file name", placeholder="cosinor_results.csv")
+
+    csv = results_df.to_pandas().to_csv(index=False).encode("utf-8")
+
+    st.download_button(
+        label="Download Results",
+        data=csv,
+        file_name=file_name,
+        mime="text/csv"
+    )
+
+def sinusoidal_model(x, amplitude, frequency, phase, offset):
+    return amplitude * np.sin(frequency * x + phase) + offset
+
+def interpolate_data(data, method):
+    data = pl.DataFrame(data)
+    y = data["y"].to_numpy()
+    x = np.arange(len(y))
+    isnan = np.isnan(y)
+
+    if np.any(isnan):
+        x_valid = x[~isnan]
+        y_valid = y[~isnan]
+
+        if method == "sinusoidal":
+            interpolated_values = np.interp(x, x_valid, y_valid)
+            interpolated_values[~isnan] = y[~isnan]
+            interpolated_values[isnan] = [(x+1)*np.median(y_valid) for x in np.cos(interpolated_values[isnan])]
+
+        elif method == "sinusoidal (curve-fit)":
+            initial_guess = [np.std(y_valid), 2 * np.pi / len(y_valid), 0, np.mean(y_valid)]
+            try:
+                params, _ = curve_fit(sinusoidal_model, x_valid, y_valid, p0=initial_guess)
+                interpolated_values = y.copy()
+                interpolated_values[isnan] = sinusoidal_model(x[isnan], *params)
+            except RuntimeError:
+                print("Curve fitting did not converge; consider refining the initial guess.")
+                interpolated_values = y
+
+        elif method == "polynomial":
+            poly_coeff = np.polyfit(x_valid, y_valid, 2)
+            poly_interp = np.polyval(poly_coeff, x)
+            interpolated_values = y.copy()
+            interpolated_values[isnan] = poly_interp[isnan]
+
+        elif method == "spline-cubic":
+            cubic_spline = CubicSpline(x_valid, y_valid)
+            spline_interp = cubic_spline(x)
+            interpolated_values = y.copy()
+            interpolated_values[isnan] = spline_interp[isnan]
+
+        elif method == "spline-quadratic":
+            spline_quadratic = UnivariateSpline(x_valid, y_valid, k=2)
+            spline_interp = spline_quadratic(x)
+            interpolated_values = y.copy()
+            interpolated_values[isnan] = spline_interp[isnan]
+
+        data = data.with_columns(interpolated_y=pl.Series(interpolated_values)).to_pandas()
+
+    return data
 
 def main():
     st.title("Cosinor Analysis App")
 
     st.write("This app is built for testing cosinor parameters on your data")
 
-    st.write("We would use the \"subname Heart Rate and Steps and Sleep Aggregated.csv\" file for this analysis")
+    st.write("We will use the \"subname Heart Rate and Steps and Sleep Aggregated.csv\" file for this analysis")
 
     st.divider()
 
@@ -277,7 +430,6 @@ def main():
             st.write("Data uploaded successfully")
             st.write(dataframe.head())
 
-            # Check for required columns
             required_columns = ["DateAndMinute", "BpmMean", "StepsInMinute", "not_in_israel", "is_dst_change"]
             missing_columns = [col for col in required_columns if col not in dataframe.columns]
             if missing_columns:
@@ -290,9 +442,9 @@ def main():
 
             st.write("Preprocessing the data")
 
-            remove_not_in_IL = st.checkbox("Remove date that the subject wasn't in Israel?")
+            remove_not_in_IL = st.checkbox("Remove data when the subject wasn't in Israel?")
 
-            remove_dst_change = st.checkbox("Remove date that the subject was in DST change?")
+            remove_dst_change = st.checkbox("Remove data during DST change?")
 
             signal = st.selectbox("Select the signal to analyze", ["BpmMean", "StepsMean"])
 
@@ -305,20 +457,20 @@ def main():
             if show_preprocess:
                 st.write(first_preprocess)
 
-            st.write("Select the analysis window size (hours)")
+            st.write("Select the window size for analysis (in hours)")
 
             analysis_window_size = st.selectbox("Select the analysis window size (hours)", [24, 48, 72, 96, 120])
 
-            st.write("Select the window shift size (hours)")
+            st.write("Select the starting hour for windows")
 
-            window_shift_size = st.selectbox("Select the window shift size (hours)", [12, 24])
+            start_hour = st.selectbox("Select the starting hour for windows", [0, 12])
 
             start_datetime = first_preprocess.select(pl.col("DateAndMinute").min()).item()
             end_datetime = first_preprocess.select(pl.col("DateAndMinute").max()).item()
 
-            windows = generate_time_windows(start_datetime, end_datetime, analysis_window_size, window_shift_size)
+            windows = generate_fixed_windows(start_datetime, end_datetime, analysis_window_size, start_hour)
 
-            st.write(f"Generated {len(windows)} windows.")
+            st.write(f"Generated {len(windows)} windows starting at {start_hour}:00 with size {analysis_window_size} hours.")
 
             st.write("Select the window size for downsampling")
 
@@ -326,77 +478,93 @@ def main():
 
             win_size_int = {"1m": 1, "2m": 2, "5m": 5, "10m": 10, "15m": 15, "30m": 30, "1h": 60, "2h": 120}
 
-            st.write("Select the tolerance for missing data")
+            st.write("Select the tolerance for missing data per window")
 
-            missing_tolerance = st.slider("Select the tolerance for missing data (percentage)", 0, 100, 10)
+            missing_tolerance = st.slider("Select the tolerance for missing data per window (percentage)", 0, 100, 10)
 
-            st.write("Downsampling and processing the data per window")
+            st.write("Processing the data per window")
 
             interpolated = st.checkbox("Interpolate the missing data")
 
             if interpolated:
                 st.write("Select the method for interpolation")
 
-                method = st.selectbox("Select the method for interpolation", ["sinosuidal", "sinosuidal (curve-fit)", "polynomial", "spline-cubic", "spline-quadratic"])
+                method = st.selectbox("Select the method for interpolation", ["sinusoidal", "sinusoidal (curve-fit)", "polynomial", "spline-cubic", "spline-quadratic"])
 
-            if 'results' in st.session_state and 'downsampled_data' in st.session_state:
-                results = st.session_state.results
-                downsampled_data = st.session_state.downsampled_data
-            else:
-                results = {}
-                downsampled_data = []
+            results = {}
+            downsampled_data_list = []
 
-                for window in windows:
-                    window_id = window['window_id']
-                    window_start = window['start']
-                    window_end = window['end']
+            for window in windows:
+                window_label = window['label']
+                window_start = window['start']
+                window_end = window['end']
 
-                    st.write(f"Processing window {window_id}: {window_start} to {window_end}")
+                st.write(f"Processing window {window_label}")
 
-                    # Extract data in the window
-                    data_in_window = first_preprocess.filter(
-                        (pl.col("DateAndMinute") >= window_start) & (pl.col("DateAndMinute") < window_end)
-                    )
+                data_in_window = first_preprocess.filter(
+                    (pl.col("DateAndMinute") >= window_start) & (pl.col("DateAndMinute") <= window_end)
+                )
 
-                    # Downsample data in the window
-                    downsampled = downsample_bpm_mean(data_in_window, window_size, signal, missing_tolerance, window_id)
+                total_points = data_in_window.shape[0]
+                missing_points = data_in_window.filter(pl.col(signal).is_null()).shape[0]
+                missing_percentage = (missing_points / total_points) * 100 if total_points > 0 else 100
 
-                    # Perform interpolation if selected
-                    if interpolated:
-                        downsampled = interpolate_data(downsampled, method)
+                st.write(f"Missing data in window: {missing_percentage:.2f}%")
 
-                    # Perform cosinor analysis
-                    period = (analysis_window_size * 60) / win_size_int[window_size]
-                    result = cosinor_analysis(downsampled, signal, period)
+                if missing_percentage > missing_tolerance:
+                    st.write(f"Skipping window due to high missing data.")
+                    continue
 
-                    # Store results
-                    results[window_id] = result
-                    downsampled_data.append(downsampled)
+                downsampled = downsample_bpm_mean(data_in_window, window_size, signal)
 
-                st.session_state.results = results
-                st.session_state.downsampled_data = downsampled_data
+                if interpolated:
+                    downsampled = interpolate_data(downsampled, method)
+
+                period = (analysis_window_size * 60) / win_size_int[window_size]
+
+                downsampled['x'] = np.arange(len(downsampled))
+                downsampled['test'] = window_label
+
+                cosinor_result = cosinor_analysis(downsampled, signal, period)
+
+                results[window_label] = cosinor_result[window_label]
+
+                downsampled_data_list.append(downsampled)
+
+            downsampled_data = pd.concat(downsampled_data_list, ignore_index=True)
+
+            st.session_state.results = results
+            st.session_state.downsampled_data = downsampled_data
 
             st.write("Cosinor Analysis done")
 
             plot = st.checkbox("Show plots")
 
             if plot:
-                # Create a mapping from labels to window IDs
-                window_labels = {window['label']: window['window_id'] for window in windows}
+                selected_window_label = st.selectbox("Select the window to plot", list(results.keys()))
 
-                selected_label = st.selectbox("Select the window to plot", list(window_labels.keys()))
-                selected_window_id = window_labels[selected_label]
-
-                st.session_state.selected_window_id = selected_window_id
+                st.session_state.selected_window_label = selected_window_label
 
                 window_size_selected = win_size_int[window_size]
 
-                plot_cosinor(results, downsampled_data, window_size_selected, selected_window_id, analysis_window_size)
+                plot_cosinor(results, downsampled_data, window_size_selected, selected_window_label, analysis_window_size)
 
-            # Rest of your code...
+            show_all_windows = st.checkbox("Show all windows in a single plot")
+
+            if show_all_windows:
+                window_size_selected = win_size_int[window_size]
+                all_dates_plot(results, downsampled_data, window_size_selected, analysis_window_size)
+
+            if results:
+                st.write("Download the results")
+
+                download = st.button("Download Results")
+
+                if download:
+                    download_results(results, downsampled_data)
 
         except Exception as e:
-            st.write("Error uploading file")
+            st.write("Error occurred:")
             st.write(e)
 
 if __name__ == "__main__":
