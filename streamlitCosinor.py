@@ -542,7 +542,7 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
         amplitude = results[key][2]['amplitude']
         acrophase = quadrant_adjustment(results[key][2]['peaks'][0]/results[key][2]['period'] * 2 * np.pi, results[key][2]['acrophase'])
 
-        # theta = results[key][2]['peaks'][0]/results[key][2]['period'] * 2 * np.pi
+        theta = results[key][2]['peaks'][0]/results[key][2]['period'] * 2 * np.pi
         # corrected_acrophase = quadrant_adjustment(theta, acrophase)
 
         # acrophase = corrected_acrophase
