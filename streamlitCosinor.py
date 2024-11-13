@@ -590,7 +590,7 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
 
         # Calculate the mean amplitude and acrophase
         mean_amplitude = (ci_amplitude[0] + ci_amplitude[1]) / 2
-        mean_acrophase = quadrant_adjustment(theta,np.deg2rad(ci_acrophase[0] + ci_acrophase[1]) / 2)
+        mean_acrophase = theta,np.deg2rad(ci_acrophase[0] + ci_acrophase[1]) / 2
 
         # Calculate semi-axis lengths based on confidence intervals
         semi_amplitude = (ci_amplitude[1] - ci_amplitude[0]) / 2
