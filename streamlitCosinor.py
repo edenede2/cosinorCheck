@@ -333,7 +333,7 @@ def cosinor_analysis(data: list, signal: str, period: int):
     data = pl.concat(data, how='vertical_relaxed').to_pandas()
 
     labels = data['test'].unique()
-
+    st.write(period)
     for label in labels:
         data_for_label = data[data['test'] == label]
         data_for_label = data_for_label.dropna(subset=['y'])
