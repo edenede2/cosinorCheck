@@ -552,7 +552,7 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
 
         for i in range(len(ci_acrophase)):
             ci_acrophase[i] = quadrant_adjustment(theta, np.deg2rad(ci_acrophase[i]))
-        ci_acrophase = [ci_acrophase[1], ci_acrophase[0]]
+        
 
 
         # st.write(f"CI Amplitude: {ci_amplitude}")
