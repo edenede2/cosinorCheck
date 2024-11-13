@@ -560,7 +560,7 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
         # Plot the center point
         fig.add_trace(go.Scatterpolar(
             r=[amplitude],
-            theta=[np.rad2deg(acrophase)],
+            theta=[corrected_acrophase],
             mode='markers',
             marker=dict(
                 color='red',
