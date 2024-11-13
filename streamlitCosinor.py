@@ -428,17 +428,20 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
 
     st.plotly_chart(fig)
 
+    theta = data[2]['peaks'][0]/data[2]['period'] * 2 * np.pi
+    corrected_acrophase = quadrant_adjustment(theta, data[2]['acrophase'])
 
     amplitude = data[2]['amplitude']
-    if half_day:
-        acrophase = data[2]['acrophase']
-        acrophase = np.abs(acrophase) + np.pi
-    else:
-        acrophase = data[2]['acrophase']
-        if acrophase < 0:
-            acrophase = 2 * np.pi + acrophase
-        else:
-            acrophase = acrophase
+    # if half_day:
+    #     acrophase = data[2]['acrophase']
+    #     acrophase = np.abs(acrophase) + np.pi
+    # else:
+    #     acrophase = data[2]['acrophase']
+    #     if acrophase < 0:
+    #         acrophase = 2 * np.pi + acrophase
+    #     else:
+    #         acrophase = acrophase
+    acrophase = corrected_acrophase
     mesor = data[2]['mesor']
 
 
@@ -446,7 +449,7 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
 
     st.write(f"abs acrophase: {acrophase}")
 
-    center_theta = [0, np.rad2deg(acrophase)]
+    center_theta = [0, acrophase]
 
     fig = go.Figure()
     fig.add_trace(go.Scatterpolar(
