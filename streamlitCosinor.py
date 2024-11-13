@@ -98,7 +98,7 @@ def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal
 
         window_df = pl.DataFrame({
             "test": [window_label] * data_in_window.shape[0],
-            "x": data_in_window.shape[0],
+            "x": np.arange(data_in_window.shape[0]),
             "y": data_in_window['downsampled'],
             "interpolated_y": data_in_window['interpolated_y'] if 'interpolated_y' in data_in_window.columns else None
         })
