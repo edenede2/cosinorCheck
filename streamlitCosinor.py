@@ -541,25 +541,26 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
         amplitude = results[key][2]['amplitude']
         theta = results[key][2]['peaks'][0]/results[key][2]['period'] * 2 * np.pi
         corrected_acrophase = quadrant_adjustment(theta, results[key][2]['acrophase'])
-        acrophase = corrected_acrophase
-        # if half_day:
-        #     acrophase = results[key][2]['acrophase']
-        #     acrophase = np.abs(acrophase) + np.pi
-        # else:
-        #     acrophase = results[key][2]['acrophase']
+        if half_day:
+            acrophase = results[key][2]['acrophase']
+            acrophase = np.abs(acrophase) + np.pi
+        else:
+            acrophase = results[key][2]['acrophase']
         
         # Extract confidence intervals
         ci_amplitude = results[key][2]['CI(amplitude)']
-        ci_acrophase = results[key][2]['CI(acrophase)']
 
-        # for i in range(2):
-        #     ci_acrophase[i] = quadrant_adjustment(theta, ci_acrophase[i])
-
+        if half_day:
+            ci_acrophase = results[key][2]['CI(acrophase)']
+            for i in range(len(ci_acrophase)):
+                ci_acrophase[i] = np.abs(ci_acrophase[i]) + np.pi
+        else:
+            ci_acrophase = results[key][2]['CI(acrophase)']
 
         # Plot the center point
         fig.add_trace(go.Scatterpolar(
             r=[amplitude],
-            theta=[acrophase],
+            theta=[np.rad2deg(acrophase)],
             mode='markers',
             marker=dict(
                 color='red',
@@ -570,7 +571,7 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
 
         # Plot the radius line from the center to the point
         center_r = [0, amplitude]
-        center_theta = [0,acrophase]
+        center_theta = [0, np.rad2deg(acrophase)]
 
         fig.add_trace(go.Scatterpolar(
             r=center_r,
@@ -587,14 +588,13 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
         num_points = 100  # Number of points for smooth ellipse
         theta_range = np.linspace(0, 2 * np.pi, num_points)
 
-        st.write(str(ci_amplitude), str(ci_acrophase))
         # Calculate the mean amplitude and acrophase
         mean_amplitude = (ci_amplitude[0] + ci_amplitude[1]) / 2
-        mean_acrophase = (np.deg2rad(ci_acrophase[0]) + np.deg2rad(ci_acrophase[1])) / 2
+        mean_acrophase = (ci_acrophase[0] + ci_acrophase[1]) / 2
 
         # Calculate semi-axis lengths based on confidence intervals
         semi_amplitude = (ci_amplitude[1] - ci_amplitude[0]) / 2
-        semi_acrophase = (np.deg2rad(ci_acrophase[1]) - np.deg2rad(ci_acrophase[0])) / 2
+        semi_acrophase = (ci_acrophase[1] - ci_acrophase[0]) / 2
 
         # Generate ellipse points in polar coordinates
         ellipse_r = mean_amplitude + semi_amplitude * np.cos(theta_range)
