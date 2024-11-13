@@ -596,6 +596,10 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
         semi_amplitude = (ci_amplitude[1] - ci_amplitude[0]) / 2
         semi_acrophase = (ci_acrophase[1] - ci_acrophase[0]) / 2
 
+        st.write(f"Mean Amplitude: {mean_amplitude}")
+        st.write(f"Mean Acrophase: {mean_acrophase}")
+        st.write(f"Semi Amplitude: {semi_amplitude}")
+        st.write(f"Semi Acrophase: {semi_acrophase}")
         # Generate ellipse points in polar coordinates
         ellipse_r = mean_amplitude + semi_amplitude * np.cos(theta_range)
         ellipse_theta = mean_acrophase + semi_acrophase * np.sin(theta_range)
