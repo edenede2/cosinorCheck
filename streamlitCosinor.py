@@ -2,12 +2,13 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import polars as pl
-from CosinorPy import file_parser, cosinor, cosinor1
-from datetime import datetime, timedelta, date, time
+from CosinorPy import cosinor
+from datetime import datetime, timedelta, time
 import plotly.graph_objects as go
 from scipy.interpolate import CubicSpline, UnivariateSpline
 from scipy.optimize import curve_fit
 
+# Initialize session state variables
 if 'analysed' not in st.session_state:
     st.session_state.analysed = False
 
@@ -17,27 +18,41 @@ if 'results' not in st.session_state:
 if 'selected_window_label' not in st.session_state:
     st.session_state.selected_window_label = None
 
-def generate_fixed_windows(start_datetime, end_datetime, window_size_hours, start_hour):
+def generate_fixed_windows(start_datetime, end_datetime, window_size_hours, window_shift_hours):
     """
-    Generate time windows starting at fixed times (e.g., 00:00 or 12:00)
-    with specified window sizes.
+    Generate time windows starting every window_shift_hours, with specified window sizes.
     """
     windows = []
-    current_start = datetime.combine(start_datetime.date(), time(start_hour))
-    if current_start < start_datetime:
-        current_start += timedelta(days=1)
-    delta_window = timedelta(hours=window_size_hours)
     window_id = 0
+    delta_window = timedelta(hours=window_size_hours)
+    delta_shift = timedelta(hours=window_shift_hours)
+
+    # Adjust current_start to the next multiple of window_shift_hours
+    current_start = start_datetime.replace(minute=0, second=0, microsecond=0)
+    remainder_hours = current_start.hour % window_shift_hours
+    if remainder_hours != 0:
+        # Move to the next window_shift_hours increment
+        current_start += timedelta(hours=window_shift_hours - remainder_hours)
 
     while current_start <= end_datetime:
-        current_end = current_start + delta_window - timedelta(seconds=1)  # include up to end time
+        current_end = current_start + delta_window - timedelta(seconds=1)
         label = f"{current_start.strftime('%Y-%m-%d %H:%M:%S')} to {current_end.strftime('%Y-%m-%d %H:%M:%S')}"
-        windows.append({'window_id': window_id, 'start': current_start, 'end': current_end, 'label': label})
-        current_start += timedelta(hours=24)  # Move to the next day
+        windows.append({
+            'window_id': window_id,
+            'start': current_start,
+            'end': current_end,
+            'label': label
+        })
+        current_start += delta_shift
         window_id += 1
+
     return windows
 
 def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal):
+    """
+    Preprocess the data by selecting relevant columns, parsing dates,
+    and applying filters based on user choices.
+    """
     if signal == "BpmMean":
         col = "BpmMean"
     elif signal == "StepsMean":
@@ -64,7 +79,10 @@ def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal
 
     return df
 
-def downsample_bpm_mean(df: pl.DataFrame, window_size: str, signal: str) -> pd.DataFrame:
+def downsample_signal(df: pl.DataFrame, window_size: str, signal: str) -> pd.DataFrame:
+    """
+    Downsample the signal data using the specified window size.
+    """
     if signal == "BpmMean":
         col = "BpmMean"
     elif signal == "StepsMean":
@@ -86,41 +104,28 @@ def downsample_bpm_mean(df: pl.DataFrame, window_size: str, signal: str) -> pd.D
         pl.when(pl.col("count_missing") > pl.col("count_non_missing"))
           .then(None)
           .otherwise(pl.col("mean"))
-          .alias("downsampled")
+          .alias("y")
     ).select([
         pl.col("DateAndMinute"),
-        pl.col("downsampled")
+        pl.col("y")
     ])
 
-
     downsampled_df = downsampled.to_pandas()
-
-    downsampled_df = downsampled_df.rename(columns={"downsampled": "y"})
-    
     return downsampled_df
 
-def cosinor_analysis(data: pd.DataFrame, signal: str, period: int):
+def cosinor_analysis(data: pd.DataFrame, period: int):
+    """
+    Perform cosinor analysis on the downsampled data.
+    """
     dates = data['test'].unique()
     results = {}
 
     for date in dates:
         data_for_date = data[data['test'] == date]
-
-        data_for_date = pl.DataFrame(data_for_date)
-        data_for_date = data_for_date.drop_nulls()
+        data_for_date = data_for_date.dropna(subset=['y'])
 
         if 'interpolated_y' in data_for_date.columns:
-            data_for_date = (
-                data_for_date
-                .with_columns(
-                    y=pl.when(pl.col('y').is_null())
-                        .then(pl.col('interpolated_y'))
-                        .otherwise(pl.col('y'))
-                )
-                .to_pandas()
-            )
-        else:
-            data_for_date = data_for_date.to_pandas()
+            data_for_date['y'] = data_for_date['interpolated_y']
 
         results[date] = cosinor.fit_me(
             data_for_date['x'],
@@ -135,6 +140,9 @@ def cosinor_analysis(data: pd.DataFrame, signal: str, period: int):
     return results
 
 def generate_polar_ticks(analysis_window_size_hours):
+    """
+    Generate ticks for the polar plot based on the analysis window size.
+    """
     total_hours = analysis_window_size_hours
     num_ticks = 8
     tick_interval = total_hours / num_ticks
@@ -154,6 +162,9 @@ def generate_polar_ticks(analysis_window_size_hours):
     return hours, hours_deg
 
 def plot_cosinor(results, original_data, window_size, window_label, analysis_window_size):
+    """
+    Plot the cosinor analysis results for a single window.
+    """
     data = results[window_label]
     original_data = original_data[original_data['test'] == window_label]
 
@@ -224,7 +235,10 @@ def plot_cosinor(results, original_data, window_size, window_label, analysis_win
 
     st.plotly_chart(fig)
 
-def all_dates_plot(results, original_data, window_size, analysis_window_size):
+def all_dates_plot(results, analysis_window_size):
+    """
+    Plot the cosinor analysis results for all windows together.
+    """
     fig = go.Figure()
 
     for key in results.keys():
@@ -260,24 +274,29 @@ def all_dates_plot(results, original_data, window_size, analysis_window_size):
 
     st.plotly_chart(fig)
 
-def quadrant_adjustment(thta, acrphs):
-    if 0 <= thta < (np.pi / 2):
-        corrected_acrophase = np.rad2deg(acrphs)
-    elif (np.pi / 2) <= thta < np.pi:
-        corrected_acrophase = np.rad2deg(acrphs)
-    elif np.pi <= thta < (3 * np.pi / 2):
-        corrected_acrophase = 360 - np.rad2deg(acrphs)
-    elif (3 * np.pi / 2) <= thta < (2 * np.pi):
-        corrected_acrophase = 360 - np.rad2deg(acrphs)
+def quadrant_adjustment(theta, acrophase):
+    """
+    Adjust the acrophase based on the quadrant it falls into.
+    """
+    if 0 <= theta < (np.pi / 2):
+        corrected_acrophase = np.rad2deg(acrophase)
+    elif (np.pi / 2) <= theta < np.pi:
+        corrected_acrophase = np.rad2deg(acrophase)
+    elif np.pi <= theta < (3 * np.pi / 2):
+        corrected_acrophase = 360 - np.rad2deg(acrophase)
+    elif (3 * np.pi / 2) <= theta < (2 * np.pi):
+        corrected_acrophase = 360 - np.rad2deg(acrophase)
     else:
-        corrected_acrophase = acrphs % (2 * np.pi)
+        corrected_acrophase = acrophase % (2 * np.pi)
     return corrected_acrophase
 
 def download_results(results, original_data):
+    """
+    Compile the cosinor analysis results into a DataFrame and provide a download option.
+    """
     columns = ['window_label', 'amplitude','period','acrophase (rad)', 'corrected_acrophase (rad)',
                 'corrected_acrophase (hours)', 'corrected_acrophase (degrees)',
-                'mesor','AIC', 'BIC','peaks','heights', 'troughs', 'trough_time',
-                'heights2','max_loc', 'period2', 'p-value', 'p_reject', 'SNR', 'RSS',
+                'mesor','AIC', 'BIC','p-value', 'p_reject', 'SNR', 'RSS',
                 'resid_SE', 'ME','f-pvalue', 't-values const', 't-values x1',
                 't-values x2','R-squared', 'R-squared adjusted', 'SSR', 'minutes_based']
 
@@ -296,14 +315,6 @@ def download_results(results, original_data):
 
         corrected_acrophase = np.deg2rad(corrected_acrophase_deg)
 
-        trough_indices = params['troughs'][0] if len(params['troughs']) > 0 else [np.nan]
-        trough_loc = trough_indices/params['period'] * 24
-
-        trough_hours = int(trough_loc)
-        trough_minutes = int((trough_loc - trough_hours) * 60)
-
-        trough_time = f"{trough_hours:02d}:{trough_minutes:02d}"
-
         total_hours = (corrected_acrophase_deg/360) * params['period'] * (1/60)
         hours = int(total_hours)
         minutes = int((total_hours - hours) * 60)
@@ -320,13 +331,6 @@ def download_results(results, original_data):
             'mesor': [float(params['mesor'])],
             'AIC': [float(cosinor_model.aic)],
             'BIC': [float(cosinor_model.bic)],
-            'peaks': [str(params['peaks'])],
-            'heights': [str(params['heights'])],
-            'troughs': [str(params['troughs'])],
-            'trough_time': [str(trough_time)],
-            'heights2': [str(params['heights2'])],
-            'max_loc': [float(params['max_loc'])],
-            'period2': [float(params['period2'])],
             'p-value': [float(stats['p'])],
             'p_reject': [bool(stats['p_reject'])],
             'SNR': [float(stats['SNR'])],
@@ -366,9 +370,15 @@ def download_results(results, original_data):
     )
 
 def sinusoidal_model(x, amplitude, frequency, phase, offset):
+    """
+    Define the sinusoidal model for interpolation.
+    """
     return amplitude * np.sin(frequency * x + phase) + offset
 
 def interpolate_data(data, method):
+    """
+    Interpolate missing data using the specified method.
+    """
     data = pl.DataFrame(data)
     y = data["y"].to_numpy()
     x = np.arange(len(y))
@@ -418,9 +428,8 @@ def interpolate_data(data, method):
 def main():
     st.title("Cosinor Analysis App")
 
-    st.write("This app is built for testing cosinor parameters on your data")
-
-    st.write("We will use the \"subname Heart Rate and Steps and Sleep Aggregated.csv\" file for this analysis")
+    st.write("This app is built for testing cosinor parameters on your data.")
+    st.write("We will use the \"subname Heart Rate and Steps and Sleep Aggregated.csv\" file for this analysis.")
 
     st.divider()
 
@@ -465,16 +474,16 @@ def main():
 
             analysis_window_size = st.selectbox("Select the analysis window size (hours)", [24, 48, 72, 96, 120])
 
-            st.write("Select the starting hour for windows")
+            st.write("Select the window shift size (in hours)")
 
-            start_hour = st.selectbox("Select the starting hour for windows", [0, 12])
+            window_shift_size = st.selectbox("Select the window shift size (hours)", [12, 24])
 
             start_datetime = first_preprocess.select(pl.col("DateAndMinute").min()).item()
             end_datetime = first_preprocess.select(pl.col("DateAndMinute").max()).item()
 
-            windows = generate_fixed_windows(start_datetime, end_datetime, analysis_window_size, start_hour)
+            windows = generate_fixed_windows(start_datetime, end_datetime, analysis_window_size, window_shift_size)
 
-            st.write(f"Generated {len(windows)} windows starting at {start_hour}:00 with size {analysis_window_size} hours.")
+            st.write(f"Generated {len(windows)} windows starting every {window_shift_size} hours with size {analysis_window_size} hours.")
 
             st.write("Select the window size for downsampling")
 
@@ -519,7 +528,7 @@ def main():
                     st.write(f"Skipping window due to high missing data.")
                     continue
 
-                downsampled = downsample_bpm_mean(data_in_window, window_size, signal)
+                downsampled = downsample_signal(data_in_window, window_size, signal)
 
                 if interpolated:
                     downsampled = interpolate_data(downsampled, method)
@@ -529,13 +538,17 @@ def main():
                 downsampled['x'] = np.arange(len(downsampled))
                 downsampled['test'] = window_label
 
-                cosinor_result = cosinor_analysis(downsampled, signal, period)
+                cosinor_result = cosinor_analysis(downsampled, period)
 
                 results[window_label] = cosinor_result[window_label]
 
                 downsampled_data_list.append(downsampled)
 
-            downsampled_data = pd.concat(downsampled_data_list, ignore_index=True)
+            if downsampled_data_list:
+                downsampled_data = pd.concat(downsampled_data_list, ignore_index=True)
+            else:
+                st.write("No windows to analyze after applying missing data tolerance.")
+                return
 
             st.session_state.results = results
             st.session_state.downsampled_data = downsampled_data
@@ -556,8 +569,7 @@ def main():
             show_all_windows = st.checkbox("Show all windows in a single plot")
 
             if show_all_windows:
-                window_size_selected = win_size_int[window_size]
-                all_dates_plot(results, downsampled_data, window_size_selected, analysis_window_size)
+                all_dates_plot(results, analysis_window_size)
 
             if results:
                 st.write("Download the results")
