@@ -932,29 +932,29 @@ def main():
                 plot = st.checkbox("Show plots")
 
                 if plot:
-                    selected_date = st.selectbox("Select the date to plot", list(results.keys()))
+                    selected_date = st.selectbox("Select the date to plot", list(st.session_state.results.keys()))
 
                     st.session_state.selected_date = selected_date
 
 
                     window_size_selected = win_size_int[window_size]
 
-                    plot_cosinor(results, st.session_state.preprocessed, window_size_selected, selected_date, period)
+                    plot_cosinor(st.session_state.results, st.session_state.preprocessed, window_size_selected, selected_date, period)
 
                 show_all_dates = st.checkbox("Show all dates")
 
                 if show_all_dates:
-                    all_dates_plot(results, st.session_state.preprocessed, window_size_selected, period)
+                    all_dates_plot(st.session_state.results, st.session_state.preprocessed, window_size_selected, period)
 
                 st.write("Cosinor Analysis done")
 
-                if results:
+                if st.session_state.results:
                     st.write("Download the results")
 
                     download = st.button("Download Results")
 
                     if download:
-                        download_results(results, st.session_state.preprocessed, window_size_selected, period)
+                        download_results(st.session_state.results, st.session_state.preprocessed, window_size_selected, period)
 
 
 
