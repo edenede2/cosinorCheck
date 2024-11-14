@@ -695,6 +695,12 @@ def download_results(results, original_data, window_size, period, select_period_
 
 
     for key in results.keys():
+        half_day = False
+        if "12:00:00" in key:
+            half_day = True
+        else:
+            half_day = False
+
         model = results[key]
         cosinor_model = model[0]
         stats = model[1]
@@ -717,6 +723,9 @@ def download_results(results, original_data, window_size, period, select_period_
         trough_loc = trough_indices/params['period'] * period
     
         trough_hours = int(trough_loc)
+        if half_day:
+            trough_hours = trough_hours + 12
+            
         trough_minutes = int((trough_loc - trough_hours) * 60)
 
         if trough_hours > 24:
