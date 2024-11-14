@@ -693,7 +693,9 @@ def download_results(results, original_data, window_size, period, select_period_
     # Initialize an empty DataFrame with these columns
     results_df = pl.DataFrame({col: [] for col in columns})
 
-    st.write(f"period in hours: {period /window_size}")
+    st.write(f"period: {period}")
+    st.write(f"select_period_size: {select_period_size}")
+    st.write(f"window_size: {window_size}")
     for key in results.keys():
         half_day = False
         if "12:00:00" in key:
