@@ -739,6 +739,7 @@ def download_results(results, original_data, window_size, period, select_period_
         else:
             if half_day:
                 trough_hours = trough_hours + 12
+            trough_hours = trough_hours % 24
             trough_time = f"{trough_hours:02d}:{trough_minutes:02d}"
 
 
