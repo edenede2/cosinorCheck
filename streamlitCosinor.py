@@ -974,6 +974,7 @@ def main():
 
                 if show_all_dates:
                     period = select_period_size * 60 / win_size_int[window_size]
+                    window_size_selected = win_size_int[window_size]
                     all_dates_plot(st.session_state.results, st.session_state.preprocessed, window_size_selected, period, select_period_size)
 
                 st.write("Cosinor Analysis done")
