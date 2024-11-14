@@ -81,10 +81,10 @@ def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal
         missing_points = data_in_window.filter(pl.col(col).is_null()).shape[0]
         missing_percentage = (missing_points / total_points) * 100 if total_points > 0 else 100
 
-        st.write(f"Total points: {total_points}, Missing points: {missing_points}, Missing percentage: {missing_percentage:.2f}%")
+        # st.write(f"Total points: {total_points}, Missing points: {missing_points}, Missing percentage: {missing_percentage:.2f}%")
 
         if missing_percentage > missing_tolerance:
-            st.write(f"Skipping window {window_id} - {window_label} due to high missing data")
+            # st.write(f"Skipping window {window_id} - {window_label} due to high missing data")
             continue
 
         downsampled = downsample_signal(data_in_window, window_size, col)
@@ -983,6 +983,7 @@ def main():
                     st.write("Download the results")
 
                     download = st.button("Download Results")
+                    window_size_selected = win_size_int[window_size]
 
                     if download:
                         period = select_period_size * 60 / win_size_int[window_size]
