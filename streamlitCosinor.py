@@ -554,10 +554,11 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
         ci_acrophase = results[key][2]['CI(acrophase)']
 
         for i in range(len(ci_acrophase)):
-            ci_acrophase[i] = quadrant_adjustment(theta, ci_acrophase[i])
+            ci_acrophase[i] = quadrant_adjustment(theta, ci_acrophase[i], thta=True)
         
         if half_day:
-            ci_acrophase = [x - np.pi for x in ci_acrophase]
+            # ci_acrophase = [x - np.pi for x in ci_acrophase]
+            ci_acrophase = [x + 180 if x < 0 else x - 180 for x in ci_acrophase]
 
         # st.write(f"CI Amplitude: {ci_amplitude}")
         st.write(f"CI Acrophase: {ci_acrophase}")
