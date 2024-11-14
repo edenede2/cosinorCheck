@@ -703,7 +703,7 @@ def download_results(results, original_data, window_size, period, select_period_
         
         peak_indices = params['peaks'] if len(params['peaks']) > 0 else [np.nan]
         theta = peak_indices[0]/params['period'] * 2 * np.pi
-        corrected_acrophase_deg = quadrant_adjustment(theta, params['acrophase'])
+        corrected_acrophase_deg = quadrant_adjustment(theta, params['acrophase'], radian=False)
         
 
 
