@@ -725,7 +725,7 @@ def download_results(results, original_data, window_size, period, select_period_
         trough_hours = int(trough_loc)
         if half_day:
             trough_hours = trough_hours + 12
-            
+
         trough_minutes = int((trough_loc - trough_hours) * 60)
 
         if trough_hours > 24:
@@ -739,6 +739,9 @@ def download_results(results, original_data, window_size, period, select_period_
 
         # convert the corrected acrophase degrees to time in format HH:MM
         hours = int((corrected_acrophase_deg/360) * 24)
+
+        if half_day:
+            hours = hours + 12
 
         if hours > 24:
             days = hours // 24
