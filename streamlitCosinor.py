@@ -532,24 +532,24 @@ def generate_polarticks(period, select_period_size):
 def all_dates_plot(results, original_data, window_size, period, select_period_size):
     fig = go.Figure()
 
-    for key in results.keys():
+    for keyDate in results.keys():
 
-        if "12:00:00" in key:
+        if "12:00:00" in keyDate:
             half_day = True
         else:
             half_day = False
         # Extract parameters
-        amplitude = results[key][2]['amplitude']
-        acrophase = results[key][2]['acrophase']
+        amplitude = results[keyDate][2]['amplitude']
+        acrophase = results[keyDate][2]['acrophase']
 
-        theta = results[key][2]['peaks'][0]/results[key][2]['period'] * 2 * np.pi
+        theta = results[keyDate][2]['peaks'][0]/results[keyDate][2]['period'] * 2 * np.pi
         acrophase = quadrant_adjustment(theta, acrophase,radian=True)
 
         
         
         # Extract confidence intervals
-        ci_amplitude = results[key][2]['CI(amplitude)']
-        ci_acrophase = results[key][2]['CI(acrophase)']
+        ci_amplitude = results[keyDate][2]['CI(amplitude)']
+        ci_acrophase = results[keyDate][2]['CI(acrophase)']
 
         for i in range(len(ci_acrophase)):
             ci_acrophase[i] = quadrant_adjustment(theta, ci_acrophase[i], radian=True)
@@ -569,7 +569,7 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
                 color='red',
                 size=10
             ),
-            name=key
+            name=keyDate
         ))
 
         # Plot the radius line from the center to the point
@@ -620,7 +620,7 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
                 dash='dash',
                 width=1
             ),
-            name=f'{key} CI Ellipse'
+            name=f'{keyDate} CI Ellipse'
         ))
 
     # period_hours = 24
