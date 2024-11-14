@@ -70,7 +70,7 @@ def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal
         window_id = window['window_id']
         window_label = window['label']
 
-        st.write(f"Processing window {window_id} - {window_label}")
+        # st.write(f"Processing window {window_id} - {window_label}")
 
         data_in_window = df.filter(
             pl.col("DateAndMinute") >= window_start,
@@ -104,7 +104,7 @@ def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal
         })
 
         preprocessed_windows.append(window_df)
-
+    st.write(f"Preprocessed {len(preprocessed_windows)} windows for the analysis")
     return preprocessed_windows
 
 
