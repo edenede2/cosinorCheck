@@ -723,33 +723,40 @@ def download_results(results, original_data, window_size, period, select_period_
         trough_loc = trough_indices/params['period'] * period
     
         trough_hours = int(trough_loc)
-        if half_day:
-            trough_hours = trough_hours + 12
+        
 
         trough_minutes = int((trough_loc - trough_hours) * 60)
 
         if trough_hours > 24:
             trough_days = trough_hours // 24
+            if half_day:
+                trough_hours = trough_hours + 12
             trough_hours = trough_hours % 24
             trough_time = f"{trough_days} day(s) {trough_hours:02d}:{trough_minutes:02d}"
 
         else:
+            if half_day:
+                trough_hours = trough_hours + 12
             trough_time = f"{trough_hours:02d}:{trough_minutes:02d}"
 
 
         # convert the corrected acrophase degrees to time in format HH:MM
         hours = int((corrected_acrophase_deg/360) * 24)
 
-        if half_day:
-            hours = hours + 12
+        # if half_day:
+        #     hours = hours + 12
 
         if hours > 24:
             days = hours // 24
+            if half_day:
+                hours = hours + 12
             hours = hours % 24
             minutes = int((corrected_acrophase_deg/360) * 24 * 60) % 60
             corrected_acrophase_time = f"{np.abs(days)} day(s) {np.abs(hours):02d}:{np.abs(minutes):02d}"
         else:
             minutes = int((corrected_acrophase_deg/360) * 24 * 60) % 60
+            if half_day:
+                hours = hours + 12
             corrected_acrophase_time = f"{np.abs(hours):02d}:{np.abs(minutes):02d}"
         # minutes = int((corrected_acrophase_deg/360) * 24 * 60) % 60
         # corrected_acrophase_time = f"{hours:02d}:{minutes:02d}"
