@@ -729,7 +729,7 @@ def download_results(results, original_data, window_size, period, select_period_
 
         trough_minutes = int((trough_loc - trough_hours) * 60)
 
-        if trough_hours > 24:
+        if select_period_size > 24:
             trough_days = trough_hours // 24
             if half_day:
                 trough_hours = trough_hours + 12
@@ -748,7 +748,7 @@ def download_results(results, original_data, window_size, period, select_period_
         # if half_day:
         #     hours = hours + 12
 
-        if hours > 24:
+        if select_period_size > 24:
             days = hours // 24
             if half_day:
                 hours = hours + 12
