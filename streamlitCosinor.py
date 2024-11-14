@@ -744,7 +744,7 @@ def download_results(results, original_data, window_size, period, select_period_
 
 
         # convert the corrected acrophase degrees to time in format HH:MM
-        hours = int((corrected_acrophase_deg/360) * 24)
+        hours = int((corrected_acrophase_deg/360) * select_period_size)
 
         # if half_day:
         #     hours = hours + 12
