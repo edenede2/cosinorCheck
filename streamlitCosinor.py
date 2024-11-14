@@ -559,7 +559,7 @@ def all_dates_plot(results, original_data, window_size, period, select_period_si
         if half_day:
             # ci_acrophase = [x - np.pi for x in ci_acrophase]
             ci_acrophase = [x + np.pi if x < 0 else x - np.pi for x in ci_acrophase]
-            ci_amplitude = [x + np.pi for x in ci_amplitude]
+            ci_acrophase = [x + np.pi for x in ci_acrophase]
         # st.write(f"CI Amplitude: {ci_amplitude}")
         st.write(f"CI Acrophase: {ci_acrophase}")
         # Plot the center point
