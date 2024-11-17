@@ -518,8 +518,8 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
     acrophase_index = params['peaks'][0]
     mesor = params['mesor']
 
-    adj_r2 = model['rsquared_adj']
-    r2 = model['rsquared']
+    adj_r2 = float(model.rsquared_adj)
+    r2 = float(model.rsquared')
 
     x_estimated = [(x*window_size)/60 for x in data[3]][:500]
     y_estimated = data[4][:500]
