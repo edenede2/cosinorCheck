@@ -87,7 +87,7 @@ def decompose_and_interpolate(data, period_size, method="linear", signal="BpmMea
 
 
 
-def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal, period_size, shift_size, window_size, win_size_int, missing_tolerance, interpolated, interpolation_method):
+def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal, period_size, shift_size, window_size, win_size_int, missing_tolerance, interpolated):
 
     if signal == "BpmMean":
         col = "BpmMean"
@@ -128,7 +128,7 @@ def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal
     end_datetime = df.select(pl.col("DateAndMinute").max()).item()
 
     if interpolated:
-        df = decompose_and_interpolate(df, period_size, method=interpolation_method, signal=signal)
+        df = decompose_and_interpolate(df, period_size, signal=signal)
 
 
 
@@ -509,6 +509,17 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
     y_data = original_data['y']
     y_data_interpolated = original_data['interpolated_y'] if 'interpolated_y' in original_data.columns else None
 
+
+    params = data[2]
+    stats = data[1]
+
+    amplitude = params['amplitude'] + params['mesor']
+    acrophase_index = params['peaks'][0]
+    mesor = params['mesor']
+
+    adj_r2 = stats['rsquared_adj']
+    r2 = stats['rsquared']
+
     x_estimated = [(x*window_size)/60 for x in data[3]][:500]
     y_estimated = data[4][:500]
 
@@ -524,6 +535,20 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
 
     fig.add_trace(go.Scatter(x=x_data, y=y_data, mode='markers', name='Original Data'))
     fig.add_trace(go.Scatter(x=x_estimated, y=y_estimated, mode='lines', name='Estimated Data'))
+    fig.add_trace(go.Scatter(x=x_estimated, y=[mesor]*len(x_estimated), mode='lines', name='Mesor'))
+    fig.add_shape(
+        type="line",
+        x0=acrophase_index,
+        y0=mesor,
+        x1=acrophase_index,
+        y1=amplitude,
+        line=dict(
+            color="red",
+            width=2,
+            dash="dashdot"
+        )
+    )
+
     
 
     if half_day:
@@ -532,6 +557,8 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
         fig.update_layout(title='Cosinor Analysis', xaxis_title='Time [hours]', yaxis_title='Value')
 
     st.plotly_chart(fig)
+    st.write(f"Adjusted R2: {adj_r2}")
+    st.write(f"R2: {r2}")
 
     theta = data[2]['peaks'][0]/data[2]['period'] * 2 * np.pi
     acrophase = quadrant_adjustment(theta, data[2]['acrophase'], radian=False)
@@ -1044,17 +1071,10 @@ def main():
 
             interpolated = st.checkbox("Interpolate the missing data?")
 
-            if interpolated:
-                st.write("Select the method for interpolation")
-
-                interpolation_method = st.selectbox("Select the method for interpolation", ["sinosuidal", "sinosuidal (curve-fit)", "linear (after seasonality decomposed)"])
-
-            else:
-                interpolation_method = None
             
 
             if st.button("Preprocess the data"):
-                first_preprocess = first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal, select_period_size, select_shift_size, window_size, win_size_int, missing_tolerance, interpolated, interpolation_method)
+                first_preprocess = first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal, select_period_size, select_shift_size, window_size, win_size_int, missing_tolerance, interpolated)
                 st.session_state.preprocessed = first_preprocess
 
 
