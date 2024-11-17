@@ -576,8 +576,8 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
         fig.update_layout(title='Cosinor Analysis', xaxis_title='Time [hours]', yaxis_title='Value')
 
     st.plotly_chart(fig)
-    st.write(f"Adjusted R2: {adj_r2}")
-    st.write(f"R2: {r2}")
+    st.markdown(f"Adjusted R2: :green{adj_r2}:")
+    st.markdown(f"R2: :green{r2}:")
 
     theta = data[2]['peaks'][0]/data[2]['period'] * 2 * np.pi
     acrophase = quadrant_adjustment(theta, data[2]['acrophase'], radian=False)
@@ -599,7 +599,7 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
 
     center_r = [0, amplitude]
 
-    st.write(f"abs acrophase: {acrophase}")
+    # st.write(f"abs acrophase: {acrophase}")
 
     center_theta = [0, acrophase]
 
