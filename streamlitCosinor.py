@@ -924,7 +924,7 @@ def download_results(results, original_data, window_size, period, select_period_
         window_end_time = key.split(" ")[-1]
 
         if select_period_size > 24:
-            days = int(hours / 24)
+            days = int(corrected_acrophase_time.split(' ')[0])
             window_start_date = datetime.strptime(window_start_date, "%Y-%m-%d")
             window_start_date = window_start_date + timedelta(days=days)
             window_start_date = window_start_date.strftime("%Y-%m-%d")
