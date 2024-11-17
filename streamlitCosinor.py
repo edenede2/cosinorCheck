@@ -43,6 +43,16 @@ def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal
         )
     )
 
+    if remove_not_in_IL:
+        df = df.filter(
+            pl.col("not_in_israel") == False
+        )
+
+    if remove_dst_change:
+        df = df.filter(
+            pl.col("is_dst_change") == False
+        )
+        
 
 
     # start_date = df.select(pl.col("DateAndMinute").min()).item().date()
@@ -912,14 +922,15 @@ def main():
 
 
             st.write("Select the period size for cosinor analysis")
+            st.markdown("The period size is the number of days (i.e. 0.5 is 12 hours) to analyze the data in. Each period start in 00:00")
+            select_period_size = st.slider("Select the period size (in days)",  0.5, 7.0, 0.5)
 
-            select_period_size = st.selectbox("Select the period size (hours)", ["24", "48", "72", "96", "120", "144", "168"])
 
-            select_period_size = int(select_period_size)
+            select_period_size = int(select_period_size * 24)
 
             st.write("Select the shift size for each period")
 
-            select_shift_size = st.selectbox("Select the shift size (hours)", ["48","36","24", "12"])
+            select_shift_size = st.slider("Select the shift size (hours)",  0, 48, 12)
 
             select_shift_size = int(select_shift_size)
 
