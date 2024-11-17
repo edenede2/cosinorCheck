@@ -1076,6 +1076,7 @@ def main():
             if st.button("Preprocess the data"):
                 first_preprocess = first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal, select_period_size, select_shift_size, window_size, win_size_int, missing_tolerance, interpolated)
                 st.session_state.preprocessed = first_preprocess
+                st.write("Preprocessing done")
 
 
             st.write("Preprocessing done")
