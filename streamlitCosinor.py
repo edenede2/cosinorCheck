@@ -825,9 +825,6 @@ def download_results(results, original_data, window_size, period, select_period_
     )
 
 
-def sinusoidal_model(x, amplitude, frequency, phase, offset):
-    return amplitude * np.sin(frequency * x + phase) + offset
-
 
 def interpolate_data(data, method):
     data = pl.DataFrame(data)
@@ -922,7 +919,7 @@ def main():
 
             st.write("Select the shift size for each period")
 
-            select_shift_size = st.selectbox("Select the shift size (hours)", ["48","24", "12"])
+            select_shift_size = st.selectbox("Select the shift size (hours)", ["48","36","24", "12"])
 
             select_shift_size = int(select_shift_size)
 
