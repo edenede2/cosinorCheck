@@ -901,19 +901,19 @@ def download_results(results, original_data, window_size, period, select_period_
         #     hours = hours + 12
 
         if select_period_size > 24:
-            days = hours // 24
+            days = np.abs(hours // 24)
             if half_day:
-                hours = hours + 12
-            hours = hours % 24
-            if half_day:
-                hours = hours + 12
-            minutes = int((corrected_acrophase_deg/360) * 24 * 60) % 60
-            corrected_acrophase_time = f"{np.abs(days)} day(s) {np.abs(hours):02d}:{np.abs(minutes):02d}"
+                hours = np.abs(hours + 12)
+                hours = hours % 24
+            else:
+                hours = np.abs(hours) % 24
+            minutes = np.abs(int((corrected_acrophase_deg/360) * 24 * 60) % 60)
+            corrected_acrophase_time = f"{days} day(s) {hours:02d}:{minutes:02d}"
         else:
-            minutes = int((corrected_acrophase_deg/360) * 24 * 60) % 60
-            if half_day:
-                hours = hours + 12
-            corrected_acrophase_time = f"{np.abs(hours):02d}:{np.abs(minutes):02d}"
+            minutes = np.abs(int((corrected_acrophase_deg/360) * 24 * 60) % 60)
+            if '12:00:00' in key:
+                hours = np.abs(hours) + 12
+            corrected_acrophase_time = f"{hours:02d}:{minutes:02d}"
         # minutes = int((corrected_acrophase_deg/360) * 24 * 60) % 60
         # corrected_acrophase_time = f"{hours:02d}:{minutes:02d}"
 
