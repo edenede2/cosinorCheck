@@ -858,6 +858,7 @@ def download_results(results, original_data, window_size, period, select_period_
         cosinor_model = model[0]
         stats = model[1]
         params = model[2]
+        length = len(original_data['x'])
         original_data1 = original_data[original_data['test'] == key]
         
         peak_indices = params['peaks'] if len(params['peaks']) > 0 else [np.nan]
@@ -881,7 +882,7 @@ def download_results(results, original_data, window_size, period, select_period_
         trough_minutes = int((trough_loc - trough_hours) * 60)
 
         if select_period_size > 24:
-            trough_days = trough_hours // 24
+            trough_days = int((trough_indices / length) * select_period_size) // 24 
             if '12:00:00' in key:
                 trough_hours = trough_hours + 12
             trough_hours = trough_hours % 24
