@@ -923,7 +923,7 @@ def download_results(results, original_data, window_size, period, select_period_
         # corrected_acrophase_time = f"{hours:02d}:{minutes:02d}"
 
         window_start_date = key.split(" ")[0]
-        window_start_date_trough = trough_time.split(" ")[0]
+        # window_start_date_trough = trough_time.split(" ")[0]
         window_end_date = key.split(" ")[-2]
 
         window_start_time = key.split(" ")[1]
@@ -931,11 +931,11 @@ def download_results(results, original_data, window_size, period, select_period_
 
         if select_period_size > 24:
             days = int(corrected_acrophase_time.split(' ')[0])
-            days_trough = int(trough_time.split(' ')[0])
+            # days_trough = int(trough_time.split(' ')[0])
             window_start_date = datetime.strptime(window_start_date, "%Y-%m-%d")
             window_start_date = window_start_date + timedelta(days=days)
             window_start_date_trough = datetime.strptime(window_start_date, "%Y-%m-%d")
-            window_start_date_trough = window_start_date_trough + timedelta(days=days_trough)
+            # window_start_date_trough = window_start_date_trough + timedelta(days=days_trough)
             window_start_date = window_start_date.strftime("%Y-%m-%d")
             window_start_date_trough = window_start_date_trough.strftime("%Y-%m-%d")
             accrophase_datetime = f"{window_start_date} {corrected_acrophase_time.split(' ')[-1]}"
