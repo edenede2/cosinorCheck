@@ -836,7 +836,7 @@ def download_results(results, original_data, window_size, period, select_period_
     
     columns = ['date', 'amplitude','period','acrophase (rad)', 'corrected_acrophase (rad)',
                 'corrected_acrophase (hours)', 'corrected_acrophase (datetime)', 'corrected_acrophase (degrees)', 
-                'mesor','AIC', 'BIC','peaks','heights', 'troughs', 'trough_time', 'trough_datetime',
+                'mesor','AIC', 'BIC','peaks','heights', 'troughs', 'trough_time', 'trough_datetime', 'y_estimated_min_loc', 'length', 
                 'heights2','max_loc', 'period2', 'p-value', 'p_reject', 'SNR', 'RSS', 
                 'resid_SE', 'ME','f-pvalue', 't-values const', 't-values x1',
                 't-values x2','R-squared', 'R-squared adjusted', 'SSR', 'minutes_based']
@@ -957,6 +957,8 @@ def download_results(results, original_data, window_size, period, select_period_
             'troughs': [str(params['troughs'])],
             'trough_time': [str(trough_time)],
             'trough_datetime': [trough_datetime],
+            'y_estimated_min_loc': [float(y_estimated_min_loc)],
+            'length': [int(length)],
             'heights2': [str(params['heights2'])],
             'max_loc': [float(params['max_loc'])],
             'period2': [float(params['period2'])],
