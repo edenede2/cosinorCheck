@@ -923,6 +923,7 @@ def download_results(results, original_data, window_size, period, select_period_
         # corrected_acrophase_time = f"{hours:02d}:{minutes:02d}"
 
         window_start_date = key.split(" ")[0]
+        window_start_date_trough = trough_time.split(" ")[0]
         window_end_date = key.split(" ")[-2]
 
         window_start_time = key.split(" ")[1]
