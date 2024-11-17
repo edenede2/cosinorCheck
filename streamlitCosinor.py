@@ -523,8 +523,8 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
     x_estimated = [(x*window_size)/60 for x in data[3]][:500]
     y_estimated = data[4][:500]
 
-    y_estimated_max_loc = y_estimated[np.argmax(y_estimated)]
-    y_estimated_min_loc = y_estimated[np.argmin(y_estimated)]
+    y_estimated_max_loc = x_estimated[np.argmax(y_estimated)]
+    y_estimated_min_loc = x_estimated[np.argmin(y_estimated)]
     y_estimated_min = np.min(y_estimated)
 
     st.write(len(x_data), len(y_data), len(x_estimated), len(y_estimated))
@@ -565,7 +565,7 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
             dash="dashdot"
         )
     )
-    
+
 
 
     
