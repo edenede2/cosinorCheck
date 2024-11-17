@@ -515,7 +515,7 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
     model = data[0]
 
     amplitude = params['amplitude'] + params['mesor']
-    acrophase_index = params['peaks'][0]
+    acrophase_index = params['acrophase'] * length / (2 * np.pi)
     mesor = params['mesor']
 
     adj_r2 = float(model.rsquared_adj)
