@@ -835,8 +835,8 @@ def download_results(results, original_data, window_size, period, select_period_
     original_data = pl.concat(original_data, how='vertical_relaxed').to_pandas()
     
     columns = ['date', 'amplitude','period','acrophase (rad)', 'corrected_acrophase (rad)',
-                'corrected_acrophase (hours)', 'corrected_acrophase (degrees)',
-                'mesor','AIC', 'BIC','peaks','heights', 'troughs', 'trough_time', 
+                'corrected_acrophase (hours)', 'corrected_acrophase (degrees)', 'corrected_acrophase (datetime)',
+                'mesor','AIC', 'BIC','peaks','heights', 'troughs', 'trough_time', 'trough_datetime',
                 'heights2','max_loc', 'period2', 'p-value', 'p_reject', 'SNR', 'RSS', 
                 'resid_SE', 'ME','f-pvalue', 't-values const', 't-values x1',
                 't-values x2','R-squared', 'R-squared adjusted', 'SSR', 'minutes_based']
@@ -915,6 +915,14 @@ def download_results(results, original_data, window_size, period, select_period_
         # minutes = int((corrected_acrophase_deg/360) * 24 * 60) % 60
         # corrected_acrophase_time = f"{hours:02d}:{minutes:02d}"
 
+        window_start_date = key.split(" ")[0]
+        window_end_date = key.split(" ")[-2]
+
+        window_start_time = key.split(" ")[1]
+        window_end_time = key.split(" ")[-1]
+
+        accrophase_datetime = f"{window_start_date} {corrected_acrophase_time}"
+        trough_datetime = f"{window_start_date} {trough_time}"
 
 
         cosinor_model_params = {
@@ -924,6 +932,7 @@ def download_results(results, original_data, window_size, period, select_period_
             'acrophase (rad)': [float(params['acrophase'])],
             'corrected_acrophase (rad)': [float(corrected_acrophase)],
             'corrected_acrophase (hours)': [corrected_acrophase_time],
+            'corrected_acrophase (datetime)': [accrophase_datetime],
             'corrected_acrophase (degrees)': [float(corrected_acrophase_deg)],
             'mesor': [float(params['mesor'])],
             'AIC': [float(model[0].aic)],  # ensure floats
@@ -932,6 +941,7 @@ def download_results(results, original_data, window_size, period, select_period_
             'heights': [str(params['heights'])],  # Convert list to string
             'troughs': [str(params['troughs'])],
             'trough_time': [str(trough_time)],
+            'trough_datetime': [trough_datetime],
             'heights2': [str(params['heights2'])],
             'max_loc': [float(params['max_loc'])],
             'period2': [float(params['period2'])],
