@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, date, time
 import plotly.graph_objects as go
 from scipy.interpolate import CubicSpline, UnivariateSpline
 from scipy.optimize import curve_fit
+from statsmodels.tsa.seasonal import seasonal_decompose
 
 
 if 'analysed' not in st.session_state:
@@ -20,6 +21,71 @@ if 'selected_date' not in st.session_state:
 
 if 'preprocessed' not in st.session_state:
     st.session_state.preprocessed = None
+
+
+def decompose_and_interpolate(data, period_size, method="linear", signal="BpmMean"):
+    if signal == "BpmMean":
+        col = "BpmMean"
+    elif signal == "StepsMean":
+        col = "StepsInMinute"
+
+    df = (
+        data
+        .select([
+            "DateAndMinute",
+            col
+        ])
+        .with_columns(
+            pl.col(col).is_null().alias("missing"),
+            pl.col(col).interpolate(method=method).alias("interpolated")
+        )
+        .with_columns(
+            pl.col('interpolated').fill_null(strategy='mean').alias('interpolated')
+        )
+    )
+
+    data_stl_pandas = df.select(["DateAndMinute", "interpolated"]).to_pandas().set_index("DateAndMinute")
+
+    stl = seasonal_decompose(data_stl_pandas, period=period_size*60, model='additive')
+
+    stl_trend = pl.Series(stl.trend)
+    stl_seasonal = pl.Series(stl.seasonal)
+    stl_residual = pl.Series(stl.resid)
+    polar_interpolated = pl.Series(df['interpolated'])
+
+    adjusted = []
+
+    for x, y in zip(polar_interpolated, stl_seasonal):
+        adjusted.append(x - y)
+
+    seasonal_adjusted = pl.Series(adjusted)
+
+    final_df = (
+        df
+        .with_columns(
+            seasonal=stl_seasonal,
+            seasonal_adjusted=seasonal_adjusted
+        )
+        .with_columns(
+            seasonal_adjusted=pl.when(pl.col("missing") == True)
+            .then(pl.lit(None))
+            .otherwise(pl.col("seasonal_adjusted"))
+        )
+        .with_columns(
+            seasonal_adjusted=pl.col("seasonal_adjusted").interpolate(method=method)
+        )
+        .with_columns(
+            interpolated_y=pl.col("seasonal_adjusted") + pl.col("seasonal")
+        )
+    )
+
+    return final_df
+
+
+    
+    
+
+
 
 def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal, period_size, shift_size, window_size, win_size_int, missing_tolerance, interpolated, interpolation_method):
 
@@ -61,6 +127,11 @@ def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal
     start_datetime = df.select(pl.col("DateAndMinute").min()).item()
     end_datetime = df.select(pl.col("DateAndMinute").max()).item()
 
+    if interpolated:
+        df = decompose_and_interpolate(df, period_size, method=interpolation_method, signal=signal)
+
+
+
     # start_datetime = datetime(start_date.year, start_date.month, start_date.day, 0, 0, 0)
     # end_datetime = datetime(end_date.year, end_date.month, end_date.day, 23, 59, 59)
 
@@ -99,10 +170,7 @@ def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal
 
         downsampled = downsample_signal(data_in_window, window_size, col)
 
-        if interpolated:
-            data_in_window = interpolate_data(downsampled, interpolation_method)
-        else:
-            data_in_window = downsampled
+        data_in_window = downsampled
 
         # period = period_size * 60 / win_size_int[window_size]
 
@@ -110,7 +178,7 @@ def first_preprocess_step(dataframe, remove_not_in_IL, remove_dst_change, signal
             "test": [window_label] * data_in_window.shape[0],
             "x": np.arange(data_in_window.shape[0]),
             "y": data_in_window['downsampled'],
-            "interpolated_y": data_in_window['interpolated_y'] if 'interpolated_y' in data_in_window.columns else None
+            "interpolated_y": data_in_window['interpolated_mean'] if 'interpolated_mean' in data_in_window.columns else None
         })
 
         preprocessed_windows.append(window_df)
@@ -206,28 +274,55 @@ def downsample_signal(df: pl.DataFrame, window_size: str, signal: str) -> pl.Dat
     elif signal == "StepsInMinute":
         col = "StepsInMinute"
 
-    grouped = df.group_by_dynamic(
-        "DateAndMinute",
-        every=window_size,
-        period=window_size,
-        closed='left',
-        label='left'
-    ).agg([
-        pl.col(col).count().alias("count_non_missing"),
-        pl.col(col).is_null().sum().alias("count_missing"),
-        pl.col(col).mean().alias("mean"),
-    ]
-    )
 
-    downsampled = grouped.with_columns(
-        pl.when(pl.col("count_missing") > pl.col("count_non_missing"))
-        .then(None)
-        .otherwise(pl.col("mean"))
-        .alias("downsampled")
-    ).select([
-        pl.col("DateAndMinute"),
-        pl.col("downsampled")
-    ])
+    if 'interpolated_y' in df.columns:
+        grouped = df.group_by_dynamic(
+            "DateAndMinute",
+            every=window_size,
+            period=window_size,
+            closed='left',
+            label='left'
+        ).agg([
+            pl.col(col).count().alias("count_non_missing"),
+            pl.col(col).is_null().sum().alias("count_missing"),
+            pl.col(col).mean().alias("mean"),
+            pl.col("interpolated_y").mean().alias("interpolated_mean")
+        ]
+        )
+
+        downsampled = grouped.with_columns(
+            pl.when(pl.col("count_missing") > pl.col("count_non_missing"))
+            .then(None)
+            .otherwise(pl.col("mean"))
+            .alias("downsampled")
+        ).select([
+            pl.col("DateAndMinute"),
+            pl.col("downsampled"),
+            pl.col("interpolated_mean")
+        ])
+    else:
+        grouped = df.group_by_dynamic(
+            "DateAndMinute",
+            every=window_size,
+            period=window_size,
+            closed='left',
+            label='left'
+        ).agg([
+            pl.col(col).count().alias("count_non_missing"),
+            pl.col(col).is_null().sum().alias("count_missing"),
+            pl.col(col).mean().alias("mean"),
+        ]
+        )
+        
+        downsampled = grouped.with_columns(
+            pl.when(pl.col("count_missing") > pl.col("count_non_missing"))
+            .then(None)
+            .otherwise(pl.col("mean"))
+            .alias("downsampled")
+        ).select([
+            pl.col("DateAndMinute"),
+            pl.col("downsampled")
+        ])
 
     downsampled_df = downsampled.to_pandas()
 
@@ -952,7 +1047,7 @@ def main():
             if interpolated:
                 st.write("Select the method for interpolation")
 
-                interpolation_method = st.selectbox("Select the method for interpolation", ["sinosuidal", "sinosuidal (curve-fit)", "polynomial", "spline-cubic", "spline-quadratic"])
+                interpolation_method = st.selectbox("Select the method for interpolation", ["sinosuidal", "sinosuidal (curve-fit)", "linear (after seasonality decomposed)"])
 
             else:
                 interpolation_method = None
