@@ -903,7 +903,7 @@ def download_results(results, original_data, window_size, period, select_period_
         if select_period_size > 24:
             days = np.abs(hours // 24)
             if '12:00:00' in key:
-                hours = np.abs(hours + 12)
+                hours = np.abs(hours) + 12
                 hours = hours % 24
             else:
                 hours = np.abs(hours) % 24
