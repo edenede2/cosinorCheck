@@ -860,7 +860,7 @@ def download_results(results, original_data, window_size, period, select_period_
         params = model[2]
         estimated_x = model[3]
         estimated_y = model[4]
-        length = np.max(estimated_x)
+        length = len(estimated_y)
         original_data1 = original_data[original_data['test'] == key]
         
         peak_indices = params['peaks'] if len(params['peaks']) > 0 else [np.nan]
@@ -886,7 +886,7 @@ def download_results(results, original_data, window_size, period, select_period_
         y_estimated_min_loc = np.argmin(estimated_y)
 
         if select_period_size > 24:
-            trough_days = int((y_estimated_min_loc / length) * (period* window_size)) // 1440 
+            trough_days = int((y_estimated_min_loc / len(estimated_y)) * (period* window_size)) // 1440 
             if '12:00:00' in key:
                 trough_hours = trough_hours + 12
             trough_hours = trough_hours % 24
