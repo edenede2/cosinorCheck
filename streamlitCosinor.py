@@ -515,7 +515,6 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
     model = data[0]
 
     amplitude = params['amplitude'] + params['mesor']
-    acrophase_index = params['acrophase'] * length / (2 * np.pi)
     mesor = params['mesor']
 
     adj_r2 = float(model.rsquared_adj)
@@ -523,6 +522,8 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
 
     x_estimated = [(x*window_size)/60 for x in data[3]][:500]
     y_estimated = data[4][:500]
+
+    x_estimated_max_loc = x_estimated[np.argmax(y_estimated)]
 
     st.write(len(x_data), len(y_data), len(x_estimated), len(y_estimated))
 
@@ -539,9 +540,9 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
     fig.add_trace(go.Scatter(x=x_estimated, y=[mesor]*len(x_estimated), mode='lines', name='Mesor'))
     fig.add_shape(
         type="line",
-        x0=acrophase_index,
+        x0=x_estimated_max_loc,
         y0=mesor,
-        x1=acrophase_index,
+        x1=x_estimated_max_loc,
         y1=amplitude,
         line=dict(
             color="red",
