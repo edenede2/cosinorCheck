@@ -882,13 +882,13 @@ def download_results(results, original_data, window_size, period, select_period_
 
         if select_period_size > 24:
             trough_days = trough_hours // 24
-            if half_day:
+            if '12:00:00' in key:
                 trough_hours = trough_hours + 12
             trough_hours = trough_hours % 24
             trough_time = f"{trough_days} day(s) {trough_hours:02d}:{trough_minutes:02d}"
 
         else:
-            if half_day:
+            if '12:00:00' in key:
                 trough_hours = trough_hours + 12
             trough_hours = trough_hours % 24
             trough_time = f"{trough_hours:02d}:{trough_minutes:02d}"
@@ -902,7 +902,7 @@ def download_results(results, original_data, window_size, period, select_period_
 
         if select_period_size > 24:
             days = np.abs(hours // 24)
-            if half_day:
+            if '12:00:00' in key:
                 hours = np.abs(hours + 12)
                 hours = hours % 24
             else:
@@ -928,7 +928,7 @@ def download_results(results, original_data, window_size, period, select_period_
             window_start_date = datetime.strptime(window_start_date, "%Y-%m-%d")
             window_start_date = window_start_date + timedelta(days=days)
             window_start_date = window_start_date.strftime("%Y-%m-%d")
-            accrophase_datetime = f"{window_start_date} {corrected_acrophase_time}"
+            accrophase_datetime = f"{window_start_date} {corrected_acrophase_time.split(' ')[-1]}"
             trough_datetime = f"{window_start_date} {trough_time}"
         else:
             accrophase_datetime = f"{window_start_date} {corrected_acrophase_time}"
