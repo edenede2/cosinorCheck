@@ -835,7 +835,7 @@ def download_results(results, original_data, window_size, period, select_period_
     original_data = pl.concat(original_data, how='vertical_relaxed').to_pandas()
     
     columns = ['date', 'amplitude','period','acrophase (rad)', 'corrected_acrophase (rad)',
-                'corrected_acrophase (hours)', 'corrected_acrophase (degrees)', 'corrected_acrophase (datetime)',
+                'corrected_acrophase (hours)', 'corrected_acrophase (datetime)', 'corrected_acrophase (degrees)', 
                 'mesor','AIC', 'BIC','peaks','heights', 'troughs', 'trough_time', 'trough_datetime',
                 'heights2','max_loc', 'period2', 'p-value', 'p_reject', 'SNR', 'RSS', 
                 'resid_SE', 'ME','f-pvalue', 't-values const', 't-values x1',
