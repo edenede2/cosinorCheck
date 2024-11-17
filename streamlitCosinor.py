@@ -882,7 +882,7 @@ def download_results(results, original_data, window_size, period, select_period_
         trough_minutes = int((trough_loc - trough_hours) * 60)
 
         if select_period_size > 24:
-            trough_days = int((trough_indices / length) * select_period_size) // 24 
+            trough_days = int((trough_indices / length) * (period* window_size)) // 24 
             if '12:00:00' in key:
                 trough_hours = trough_hours + 12
             trough_hours = trough_hours % 24
