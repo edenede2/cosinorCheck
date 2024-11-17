@@ -519,7 +519,7 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
     mesor = params['mesor']
 
     adj_r2 = float(model.rsquared_adj)
-    r2 = float(model.rsquared')
+    r2 = float(model.rsquared)
 
     x_estimated = [(x*window_size)/60 for x in data[3]][:500]
     y_estimated = data[4][:500]
