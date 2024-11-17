@@ -905,6 +905,8 @@ def download_results(results, original_data, window_size, period, select_period_
             if half_day:
                 hours = hours + 12
             hours = hours % 24
+            if half_day:
+                hours = hours + 12
             minutes = int((corrected_acrophase_deg/360) * 24 * 60) % 60
             corrected_acrophase_time = f"{np.abs(days)} day(s) {np.abs(hours):02d}:{np.abs(minutes):02d}"
         else:
