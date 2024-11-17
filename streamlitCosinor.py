@@ -886,7 +886,7 @@ def download_results(results, original_data, window_size, period, select_period_
         y_estimated_min_loc = estimated_x[np.argmin(estimated_y)]
 
         if select_period_size > 24:
-            trough_days = int((y_estimated_min_loc / length) * (period* window_size)) // 24 
+            trough_days = int((y_estimated_min_loc / length) * (period* window_size)) // 1440 
             if '12:00:00' in key:
                 trough_hours = trough_hours + 12
             trough_hours = trough_hours % 24
