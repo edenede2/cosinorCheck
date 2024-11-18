@@ -933,9 +933,9 @@ def download_results(results, original_data, window_size, period, select_period_
             days = int(corrected_acrophase_time.split(' ')[0])
             trough_days = int((y_estimated_min_loc / len(estimated_y)) * (period* window_size)) // 1440 
             window_start_date = datetime.strptime(window_start_date, "%Y-%m-%d")
-            window_start_date = window_start_date + timedelta(days=days)
-            trough_date = datetime.strptime(window_start_date, "%Y-%m-%d") + timedelta(days=trough_days)
-            window_start_date = window_start_date.strftime("%Y-%m-%d")
+            window_start_date_fixed = window_start_date + timedelta(days=days)
+            trough_date = window_start_date + timedelta(days=trough_days)
+            window_start_date = window_start_date_fixed.strftime("%Y-%m-%d")
             trough_date = trough_date.strftime("%Y-%m-%d")
             accrophase_datetime = f"{window_start_date} {corrected_acrophase_time.split(' ')[-1]}"
             trough_datetime = f"{trough_date} {trough_time.split(' ')[-1]}"
