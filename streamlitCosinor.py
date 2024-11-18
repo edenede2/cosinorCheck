@@ -660,7 +660,7 @@ def generate_polarticks(period, select_period_size):
     hours = []
     hours_deg = []
 
-    if select_period_size == 24:
+    if (select_period_size % 24) == 0 :
         for i in range(num_ticks + 1):
             hour = i * tick_interval
             deg = (i * 360) / num_ticks
@@ -672,7 +672,7 @@ def generate_polarticks(period, select_period_size):
         for i in range(num_ticks +1):
             hour = i * tick_interval
             deg = (i * 360) / num_ticks
-            hour_int = int(hour % 24)
+            hour_int = int(hour % 24) + 12
             day = int(hour // 24) + 1
             label = f"Day {day} - {hour_int:02d}:00"
             hours.append(label)
