@@ -650,7 +650,7 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
     st.plotly_chart(fig)
 
 
-def generate_polarticks(period, select_period_size, half_day):
+def generate_polarticks(period, select_period_size, half_day = False):
     total_hours = period
 
     num_ticks = 12
