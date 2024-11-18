@@ -571,7 +571,7 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
     
 
     if half_day:
-        fig.update_layout(title='Cosinor Analysis', xaxis_title='Time [hours] (12-hour format)', yaxis_title='Value')
+        fig.update_layout(title='Cosinor Analysis', xaxis_title='Time [hours] (from 12:00)', yaxis_title='Value')
     else:
         fig.update_layout(title='Cosinor Analysis', xaxis_title='Time [hours]', yaxis_title='Value')
 
