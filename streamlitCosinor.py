@@ -626,7 +626,7 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
         name='Radius Line'
     ))
 
-    hours, hours_deg = generate_polarticks(period, select_period_size)
+    hours, hours_deg = generate_polarticks(period, select_period_size, half_day)
 
     # hours = ['00:00', '21:00', '18:00', '15:00', '12:00', '09:00', '06:00', '03:00']
     # hours_deg = [0, 45, 90, 135, 180, 225, 270, 315]
@@ -650,7 +650,7 @@ def plot_cosinor(data, original_data, window_size, date_selected, period, select
     st.plotly_chart(fig)
 
 
-def generate_polarticks(period, select_period_size):
+def generate_polarticks(period, select_period_size, half_day):
     total_hours = period
 
     num_ticks = 12
@@ -660,7 +660,7 @@ def generate_polarticks(period, select_period_size):
     hours = []
     hours_deg = []
 
-    if (select_period_size % 24) == 0 :
+    if (select_period_size /24) < 1 :
         for i in range(num_ticks + 1):
             hour = i * tick_interval
             deg = (i * 360) / num_ticks
@@ -672,7 +672,10 @@ def generate_polarticks(period, select_period_size):
         for i in range(num_ticks +1):
             hour = i * tick_interval
             deg = (i * 360) / num_ticks
-            hour_int = int(hour % 24) + 12
+            if half_day:
+                hour_int = int(hour % 24) + 12
+            else:
+                hour_int = int(hour % 24)
             day = int(hour // 24) + 1
             label = f"Day {day} - {hour_int:02d}:00"
             hours.append(label)
